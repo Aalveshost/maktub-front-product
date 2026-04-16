@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.1 - STABLE UI */
+/* Maktub Front Product Manager Styles v1.3.2 - STABLE UI */
 
 :root {
     --maktub-orange: #F05828;
@@ -102,7 +102,6 @@
     color: var(--maktub-text) !important;
 }
 
-/* Back Link - REMOVED important display to allow JS show/hide */
 #maktub-dashboard-modal .maktub-back-link {
     background: none !important;
     border: none !important;
@@ -111,7 +110,7 @@
     font-weight: 700 !important;
     cursor: pointer !important;
     font-size: 1rem !important;
-    display: flex; /* Not important here */
+    display: flex;
     align-items: center !important;
     gap: 4px !important;
 }
@@ -125,7 +124,7 @@
     cursor: pointer !important;
 }
 
-/* GRID VIEW - IMPORTANT REMOVED ON DISPLAY TO ALLOW JQUERY .hide() */
+/* GRID VIEW */
 .maktub-grid {
     display: grid; 
     grid-template-columns: repeat(3, 1fr) !important;
@@ -176,9 +175,10 @@
     box-shadow: 0 3px 10px rgba(0,0,0,0.03) !important;
 }
 
+/* Darker soft red for inactive items v1.3.2 */
 .maktub-list-item.is-inactive {
-    background-color: #fff5f5 !important;
-    border-left-color: #feb2b2 !important;
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    border-left-color: #f87171 !important;
 }
 
 .maktub-list-item h4 {
@@ -201,7 +201,7 @@
     font-weight: 700 !important;
 }
 
-/* EDITOR POPUP v1.3.1 */
+/* EDITOR POPUP v1.3.2 */
 .maktub-field-group {
     position: relative !important;
     margin-bottom: 2rem !important;
@@ -232,7 +232,7 @@
 
 .maktub-field-group textarea { height: auto !important; min-height: 80px !important; padding: 10px !important; }
 
-/* TOGGLE v1.3.1 */
+/* TOGGLE v1.3.2 */
 .maktub-toggle-wrapper {
     display: flex !important;
     align-items: center !important;

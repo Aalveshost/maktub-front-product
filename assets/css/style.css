@@ -3,11 +3,11 @@
 /* Maktub Front Product Manager Styles */
 
 :root {
-    --maktub-primary: hsl(24, 74%, 56%); /* Orange #E27D3B */
+    --maktub-primary: hsl(24, 74%, 56%);
     --maktub-primary-hover: hsl(24, 74%, 50%);
-    --maktub-bg-glass: rgba(255, 255, 255, 0.7);
-    --maktub-border-glass: rgba(255, 255, 255, 0.3);
-    --maktub-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    --maktub-bg-glass: hsl(0, 100%, 99%); /* Ultra Clean White */
+    --maktub-border-glass: rgba(0, 0, 0, 0.05);
+    --maktub-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
     --maktub-text: #1f2937;
     --maktub-text-muted: #6b7280;
     --maktub-font: 'Quicksand', sans-serif;
@@ -38,8 +38,8 @@ body {
 .maktub-modal-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
 }
 
 .maktub-modal-content {
@@ -49,8 +49,6 @@ body {
     height: auto;
     max-height: 80vh;
     background: var(--maktub-bg-glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--maktub-border-glass);
     border-radius: 20px;
     box-shadow: var(--maktub-shadow);
@@ -85,11 +83,34 @@ body {
     color: var(--maktub-text);
 }
 
+/* Close Button Styling */
+.maktub-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--maktub-text-muted);
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.maktub-modal-close:hover {
+    background: rgba(0,0,0,0.05);
+    color: var(--maktub-text);
+}
+
+/* Back Link */
 .maktub-back-link {
     background: none;
     border: none;
     color: var(--maktub-primary);
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     font-size: 0.875rem;
     padding: 0;
@@ -99,49 +120,47 @@ body {
     font-family: inherit;
 }
 
-.maktub-back-link:hover {
-    text-decoration: underline;
-}
-
-.maktub-modal-close {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    color: var(--maktub-text-muted);
-    cursor: pointer;
-    line-height: 1;
-    transition: color 0.2s;
-}
-
-.maktub-modal-close:hover {
-    color: var(--maktub-text);
-}
-
-/* Fields */
+/* Styled Fields Style - Requested design */
 .maktub-field-group {
-    margin-bottom: 1.5rem;
+    position: relative;
+    margin-bottom: 2rem;
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
 }
 
 .maktub-field-group label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--maktub-text-muted);
-    margin-bottom: 0.5rem;
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: var(--maktub-bg-glass);
+    padding: 0 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--maktub-primary); /* Matching image 3/4 style */
+    z-index: 10;
+    border-radius: 4px;
 }
 
 .maktub-field-group input,
 .maktub-field-group select,
 .maktub-field-group textarea {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    background: rgba(255, 255, 255, 0.5);
-    font-size: 1rem;
+    height: 40px;
+    padding: 0 1rem;
+    border-radius: 8px;
+    border: solid 2px #a8a8a8;
+    background: transparent;
+    font-size: 0.9375rem;
     color: var(--maktub-text);
     transition: all 0.2s;
     font-family: inherit;
+    box-sizing: border-box;
+}
+
+.maktub-field-group textarea {
+    height: auto;
+    padding: 12px;
 }
 
 .maktub-field-group input:focus,
@@ -149,54 +168,10 @@ body {
 .maktub-field-group textarea:focus {
     outline: none;
     border-color: var(--maktub-primary);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    background: #fff;
 }
 
-.maktub-modal-footer {
-    margin-top: 2rem;
-}
-
-.maktub-btn {
-    width: 100%;
-    padding: 1rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    font-family: inherit;
-}
-
-.maktub-btn-primary {
-    background: var(--maktub-primary);
-    color: white;
-    box-shadow: 0 4px 12px rgba(226, 125, 59, 0.3);
-}
-
-.maktub-btn-primary:hover {
-    background: var(--maktub-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(226, 125, 59, 0.4);
-}
-
-/* Loader */
-.maktub-loader {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(0,0,0,0.1);
-    border-top: 3px solid var(--maktub-primary);
-    border-radius: 50%;
-    animation: maktub-spin 1s linear infinite;
-    margin: 1rem auto;
-}
-
-@keyframes maktub-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Dashboard Shortcode Triggers */
+/* Triggers */
 .maktub-triggers-wrapper {
     position: fixed;
     bottom: 30px;
@@ -230,43 +205,32 @@ body {
     background: var(--maktub-primary);
 }
 
-.maktub-dashboard-trigger:hover {
-    transform: scale(1.1) rotate(15deg);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
-}
-
-.maktub-dashboard-trigger i {
-    font-size: 28px;
-}
-
 /* Category Grid */
 .maktub-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.75rem;
     padding: 0 1.5rem 1rem;
-    overflow-y: visible;
 }
 
 .maktub-cat-card {
-    background: rgba(255, 255, 255, 0.5);
+    background: #fff;
     border-radius: 12px;
     padding: 0.5rem;
     text-align: center;
     cursor: pointer;
     border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .maktub-cat-card:hover {
-    background: #fff;
     transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.05);
 }
 
 .maktub-cat-card.is-active {
     background: var(--maktub-primary);
-    border-color: var(--maktub-primary);
 }
 
 .maktub-cat-card.is-active h5 {
@@ -276,24 +240,22 @@ body {
 .maktub-cat-img {
     width: 100%;
     aspect-ratio: 1;
-    background: #f3f4f6;
+    background: #fdfdfd;
     border-radius: 12px;
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     font-size: 2rem;
 }
 
 .maktub-cat-card h5 {
     margin: 0;
     font-size: 0.825rem;
-    font-weight: 600;
-    color: var(--maktub-text);
+    font-weight: 700;
 }
 
-/* Modal Body & List Content */
+/* List Items */
 .maktub-modal-body {
     flex: 1;
     overflow-y: auto;
@@ -314,26 +276,6 @@ body {
     border-bottom: 1px solid #f1f1f1;
     box-shadow: 0px -2px 2px 0px rgba(0, 0, 0, 0.18);
     padding: 0 1rem;
-    transition: transform 0.2s;
-}
-
-.maktub-list-item:hover {
-    transform: translateX(4px);
-}
-
-.maktub-item-info {
-    flex: 1;
-}
-
-.maktub-item-info .maktub-category-label {
-    display: inline-block;
-    font-size: 0.65rem;
-    background: rgba(0, 0, 0, 0.05);
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-bottom: 2px;
-    text-transform: uppercase;
-    font-weight: 700;
 }
 
 .maktub-item-info h4 {
@@ -341,16 +283,23 @@ body {
     font-size: 1rem;
     font-weight: 700;
     color: var(--maktub-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+}
+
+.maktub-category-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    background: #fdf2f0;
+    color: var(--maktub-primary);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    font-weight: 700;
 }
 
 .maktub-item-price {
     font-size: 1rem;
     font-weight: 700;
     color: #10b981;
-    margin-top: 2px;
 }
 
 .maktub-item-actions .maktub-btn-edit {
@@ -362,12 +311,20 @@ body {
     border: none;
     cursor: pointer;
     font-weight: 700;
-    font-family: var(--maktub-font);
-    box-shadow: 0 2px 8px rgba(226, 125, 59, 0.2);
-    transition: all 0.2s;
 }
 
-.maktub-item-actions .maktub-btn-edit:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
+.maktub-modal-footer {
+    padding: 0 1.5rem 1.5rem;
+}
+
+.maktub-btn-primary {
+    width: auto; /* Not full width anymore for editor */
+    padding: 0.75rem 2rem;
+    background: var(--maktub-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
 }

@@ -75,9 +75,15 @@
                 }
             });
 
-            // Close Modals
-            $(document).on('click', '.maktub-modal-close, .maktub-modal-overlay', function() {
-                $('.maktub-modal').removeClass('is-active').hide();
+            // Close CURRENT active Modal (Only the one being clicked)
+            $(document).on('click', '.maktub-modal-close', function(e) {
+                e.stopPropagation();
+                $(this).closest('.maktub-modal').removeClass('is-active').hide();
+            });
+
+            // Close on overlay click (Only the top one)
+            $(document).on('click', '.maktub-modal-overlay', function(e) {
+                $(this).closest('.maktub-modal').removeClass('is-active').hide();
             });
 
             // Form Submit
@@ -130,7 +136,6 @@
             this.$grid.show();
 
             let gridHtml = '';
-            
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
             
             slugsToShow.forEach(slug => {
@@ -202,12 +207,10 @@
             let html = '';
             
             let filtered = [...this.allProducts];
-
             if (categorySlug !== 'all') {
                 filtered = filtered.filter(p => p.cat === categorySlug);
             }
 
-            // Alphabetical Sort
             filtered.sort((a, b) => a.title.localeCompare(b.title));
 
             if (filtered.length === 0) {

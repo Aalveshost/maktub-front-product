@@ -48,7 +48,15 @@
             const self = this;
             $(document).on('click', '.maktub-trigger-classic', function(e) { e.preventDefault(); self.currentMode = 'classic'; self.openDashboard(); });
             $(document).on('click', '.maktub-trigger-grid', function(e) { e.preventDefault(); self.currentMode = 'grid'; self.openDashboard(); });
-            this.$btnBack.on('click', function() { self.showGridOnly(); });
+            
+            this.$btnBack.on('click', function(e) { 
+                // NEW VOLTAR LOGIC v1.3.10
+                if (self.$grid.is(':visible')) {
+                    self.$dashModal.removeClass('is-active').hide();
+                } else {
+                    self.showGridOnly(); 
+                }
+            });
 
             $(document).on('click', '.maktub-cat-card', function() {
                 const slug = $(this).data('slug');
@@ -89,7 +97,7 @@
             this.$dashModal.addClass('is-active').show();
             this.$list.empty();
             this.$grid.empty();
-            this.$btnBack.hide();
+            this.$btnBack.show(); // Always show back btn now in orange mode
             this.$modalBody.show();
             $.ajax({
                 url: `${maktubData.restUrl}/products`,
@@ -104,19 +112,26 @@
         },
 
         showGridOnly: function() {
-            this.$btnBack.hide();
+            this.$btnBack.show(); // For closing
             this.$mainTitle.text('Escolha uma Categoria');
             this.$grid.show();
             this.$list.hide();
+            
             let gridHtml = '';
-            // Simplified Grid: No standalone Adicionais cards
-            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
+            // EXPANDED SLUGS v1.3.10
+            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'agua', 'cervejas'];
+            
             slugsToShow.forEach(slug => {
                 const cat = this.categories.find(c => c.slug === slug);
                 if (cat) {
                     let icon = '🥟';
                     if (slug.includes('doce')) icon = '🍩';
                     if (slug.includes('especial')) icon = '🌟';
+                    if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
+                    if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
+                    if (slug.includes('agua')) icon = '💧';
+                    if (slug.includes('cerveja')) icon = '🍺';
+
                     gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
             });
@@ -135,9 +150,9 @@
                 if (slug.includes('pastel')) icon = '🥟';
                 if (slug.includes('bebida') || slug.includes('refri') || slug.includes('cerveja')) icon = '🥤';
                 if (slug.includes('doce')) icon = '🍩';
-                if (slug.includes('cachorro')) icon = '🌭';
+                if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
                 if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
-                if (slug.includes('adicional')) icon = '✨';
+                if (slug.includes('adicional') || slug.includes('acrescimo')) icon = '✨';
                 const isActive = (slug === 'pastel-salgado') ? 'is-active' : '';
                 gridHtml += `<div class="maktub-cat-card ${isActive}" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
             });
@@ -158,10 +173,16 @@
             const self = this;
             let html = '';
             
-            // COMPOSITE VIEW v1.3.9 nested logic
-            if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce') {
+            // COMPOSITE VIEW v1.3.10 extended logic
+            const compositeMap = {
+                'pastel-salgado': 'pastel-salgado-adicional',
+                'pastel-doce': 'pastel-doce-adicional',
+                'cachorro-quente': 'cachorro-quente-acrescimo'
+            };
+
+            if (compositeMap[categorySlug]) {
                 const mainItems = this.allProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
-                const extraSlug = (categorySlug === 'pastel-salgado') ? 'pastel-salgado-adicional' : 'pastel-doce-adicional';
+                const extraSlug = compositeMap[categorySlug];
                 const extraItems = this.allProducts.filter(p => p.cat === extraSlug).sort((a,b) => a.title.localeCompare(b.title));
 
                 mainItems.forEach(item => { html += self.buildItemHtml(item, false); });
@@ -174,10 +195,10 @@
                 if (categorySlug !== 'all') filtered = filtered.filter(p => p.cat === categorySlug);
                 filtered.sort((a, b) => a.title.localeCompare(b.title));
                 if (filtered.length === 0) {
-                    html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';
+                    html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado neste categoria.</p>';
                 } else {
                     filtered.forEach(item => {
-                        const isAdicional = item.cat.includes('adicional');
+                        const isAdicional = item.cat.includes('adicional') || item.cat.includes('acrescimo');
                         html += self.buildItemHtml(item, isAdicional);
                     });
                 }
@@ -187,9 +208,18 @@
 
         buildItemHtml: function(item, isAdicional) {
             const statusClass = (item.status != '1') ? 'is-inactive' : '';
-            const adicionalClass = isAdicional ? 'is-adicional' : '';
+            
+            // Map borders v1.3.10
+            let borderClass = '';
+            const cat = item.cat;
+            if (isAdicional) borderClass = 'border-gold';
+            else if (cat === 'cachorro-quente') borderClass = 'border-hotdog';
+            else if (cat === 'porcoes') borderClass = 'border-porcoes';
+            else if (cat === 'agua') borderClass = 'border-water';
+            else if (cat === 'cervejas') borderClass = 'border-beer';
+
             return `
-                <div class="maktub-list-item ${statusClass} ${adicionalClass}">
+                <div class="maktub-list-item ${statusClass} ${borderClass}">
                     <div class="maktub-item-info">
                         <h4>${item.title}</h4>
                         <div class="maktub-item-price">${this.formatPrice(item.price)}</div>

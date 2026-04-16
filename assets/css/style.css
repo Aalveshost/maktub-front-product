@@ -1,11 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.9 - CLEAN NESTED VIEW */
+/* Maktub Front Product Manager Styles v1.3.10 - EXPANDED GRID */
 
 :root {
     --maktub-orange: #F05828;
     --maktub-coral: #FFA07A;
     --maktub-gold: #FFC107;
+    --maktub-hotdog: #B83300;
+    --maktub-bege: #EBDBBC;
+    --maktub-water: #3b82f6;
+    --maktub-beer: #f59e0b;
     --maktub-bg: #ffffff;
     --maktub-text: #1f2937;
     --maktub-gray: #a8a8a8;
@@ -52,49 +56,44 @@
 .maktub-cat-img { font-size: 2.25rem !important; display: block !important; margin-bottom: 0.5rem !important; }
 .maktub-cat-card h5 { margin: 0 !important; font-weight: 700 !important; font-size: 0.85rem !important; }
 
-/* Section Title v1.3.9 BLACK */
-.maktub-list-section-title {
-    margin: 1.5rem 0 1rem !important;
-    font-size: 1.2rem !important;
-    font-weight: 700 !important;
-    color: #000 !important;
-    border-bottom: 2px solid #f1f1f1 !important;
-    display: block !important;
-    padding-bottom: 5px !important;
-}
+/* Section Title */
+.maktub-list-section-title { margin: 1.5rem 0 1rem !important; font-size: 1.2rem !important; font-weight: 700 !important; color: #000 !important; border-bottom: 2px solid #f1f1f1 !important; display: block !important; padding-bottom: 5px !important; }
 
+/* List Item Borders v1.3.10 */
 .maktub-list-item {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
     background: #fff !important;
     border-radius: 12px !important;
-    border-left: 7px solid var(--maktub-coral) !important;
+    border-left: 7px solid var(--maktub-coral) !important; /* Default */
     border-bottom: 1px solid #f1f1f1 !important;
     margin-bottom: 1rem !important;
     padding: 0 1.25rem !important;
     height: 85px !important;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.03) !important;
 }
 
-/* ADICIONAL BORDER GOLD */
-.maktub-list-item.is-adicional { border-left-color: var(--maktub-gold) !important; }
-
 .maktub-list-item.is-inactive { background-color: rgba(239, 68, 68, 0.20) !important; border-left-color: #ef4444 !important; }
+
+/* Category Specific Borders */
+.maktub-list-item.border-gold { border-left-color: var(--maktub-gold) !important; }
+.maktub-list-item.border-hotdog { border-left-color: var(--maktub-hotdog) !important; }
+.maktub-list-item.border-porcoes { border-left-color: var(--maktub-bege) !important; }
+.maktub-list-item.border-water { border-left-color: var(--maktub-water) !important; }
+.maktub-list-item.border-beer { border-left-color: var(--maktub-beer) !important; }
+
 .maktub-list-item h4 { margin: 0 !important; font-size: 1.1rem !important; font-weight: 700 !important; color: #000 !important; }
 .maktub-item-price { font-weight: 700 !important; color: var(--maktub-green) !important; font-size: 1rem !important; }
 #maktub-dashboard-modal .maktub-btn-edit { background-color: var(--maktub-orange) !important; color: #fff !important; border: none !important; border-radius: 8px !important; padding: 0.6rem 1.5rem !important; font-weight: 700 !important; cursor: pointer !important; }
 
-/* Toast and Editor */
+/* Toast and Editor kept as 1.3.9 */
 .maktub-toast { position: fixed !important; top: 30px !important; left: 50% !important; transform: translateX(-50%) translateY(-150%) !important; background: #10b981 !important; color: #fff !important; padding: 12px 24px !important; border-radius: 50px !important; font-weight: 700 !important; z-index: 2000005 !important; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3) !important; transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important; opacity: 0 !important; display: flex !important; align-items: center !important; gap: 8px !important; }
 .maktub-toast.is-active { transform: translateX(-50%) translateY(0) !important; opacity: 1 !important; }
-
 #maktub-edit-form { padding: 1.5rem !important; }
 .maktub-field-group { position: relative !important; margin-bottom: 2.25rem !important; }
 .maktub-field-group label:not(.maktub-toggle-label) { position: absolute !important; top: -10px !important; left: 14px !important; background: #fff !important; padding: 0 6px !important; font-size: 0.85rem !important; font-weight: 700 !important; color: var(--maktub-orange) !important; z-index: 5 !important; }
-.maktub-field-group input, .maktub-field-group textarea { width: 100% !important; height: 48px !important; border-radius: 12px !important; border: 2px solid var(--maktub-gray) !important; padding: 0 12px !important; font-weight: 600 !important; color: #000 !important; background: #fff !important; font-family: inherit !important; }
+.maktub-field-group input, .maktub-field-group textarea { width: 100% !important; height: 48px !important; border-radius: 12px !important; border: 2px solid var(--maktub-gray) !important; padding: 0 12px !important; font-weight: 600 !important; color: #000 !important; background: #fff !important; }
 .maktub-field-group textarea { height: auto !important; min-height: 100px !important; padding: 12px !important; }
-
 .maktub-toggle-wrapper { display: flex !important; align-items: center !important; gap: 12px !important; padding: 0.5rem 0 !important; }
 .maktub-toggle-checkbox { display: none !important; }
 .maktub-toggle-label { width: 44px !important; height: 22px !important; background: #ccc !important; border-radius: 15px !important; cursor: pointer !important; position: relative !important; }
@@ -102,9 +101,7 @@
 .maktub-toggle-checkbox:checked + .maktub-toggle-label { background-color: #10b981 !important; }
 .maktub-toggle-checkbox:not(:checked) + .maktub-toggle-label { background-color: #ef4444 !important; }
 .maktub-toggle-checkbox:checked + .maktub-toggle-label::after { left: 24px !important; }
-
 #maktub-status-text { font-weight: 700 !important; }
 .status-is-ativo { color: #10b981 !important; }
 .status-is-inativo { color: #ef4444 !important; }
-
 #maktub-edit-form .maktub-btn-primary { background-color: var(--maktub-orange) !important; color: #fff !important; border: none !important; border-radius: 12px !important; padding: 1rem 2rem !important; font-weight: 700 !important; cursor: pointer !important; width: 100% !important; box-shadow: 0 5px 15px rgba(240, 88, 40, 0.3) !important; }

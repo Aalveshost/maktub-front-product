@@ -95,7 +95,7 @@
                     
                     // Render Grid Cards
                     let gridHtml = `
-                        <div class="maktub-cat-card is-active" data-slug="all">
+                        <div class="maktub-cat-card" data-slug="all">
                             <div class="maktub-cat-img">🏠</div>
                             <h5>Todos</h5>
                         </div>
@@ -103,13 +103,17 @@
                     
                     self.categories.forEach(cat => {
                         let icon = '📦'; // Fallback icon
-                        if (cat.slug.includes('pastel')) icon = '🥟';
-                        if (cat.slug.includes('bebida') || cat.slug.includes('cerveja')) icon = '🥤';
-                        if (cat.slug.includes('doce')) icon = '🍩';
-                        if (cat.slug.includes('cachorro')) icon = '🌭';
+                        const slug = cat.slug.toLowerCase();
+                        if (slug.includes('pastel')) icon = '🥟';
+                        if (slug.includes('bebida') || slug.includes('refri') || slug.includes('cerveja')) icon = '🥤';
+                        if (slug.includes('doce')) icon = '🍩';
+                        if (slug.includes('cachorro')) icon = '🌭';
+                        if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
+
+                        const isActive = slug === 'pastel-salgado' ? 'is-active' : '';
 
                         gridHtml += `
-                            <div class="maktub-cat-card" data-slug="${cat.slug}">
+                            <div class="maktub-cat-card ${isActive}" data-slug="${cat.slug}">
                                 <div class="maktub-cat-img">${icon}</div>
                                 <h5>${cat.name}</h5>
                             </div>
@@ -117,8 +121,12 @@
                     });
                     self.$grid.html(gridHtml);
 
-                    // Render First List
-                    self.renderList('all');
+                    // Render Initial List (Default to pastel-salgado)
+                    const hasPastelSalgado = self.categories.some(c => c.slug === 'pastel-salgado');
+                    const defaultCat = hasPastelSalgado ? 'pastel-salgado' : 'all';
+                    
+                    // If we forced pastel-salgado as active above, ensure we render it
+                    self.renderList(defaultCat);
                 }
             });
         },

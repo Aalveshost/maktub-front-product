@@ -192,11 +192,18 @@
     filter: brightness(1.1);
 }
 
-/* Dashboard Shortcode Trigger */
-.maktub-dashboard-trigger {
+/* Dashboard Shortcode Triggers */
+.maktub-triggers-wrapper {
     position: fixed;
     bottom: 30px;
     right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 9999;
+}
+
+.maktub-dashboard-trigger {
     width: 60px;
     height: 60px;
     border-radius: 50%;
@@ -208,17 +215,48 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.maktub-trigger-classic {
+    background: #3b82f6; /* Azul */
+}
+
+.maktub-trigger-grid {
+    background: #8b5cf6; /* Roxo */
 }
 
 .maktub-dashboard-trigger:hover {
     transform: scale(1.1) rotate(15deg);
-    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
 }
 
 .maktub-dashboard-trigger i {
     font-size: 28px;
+}
+
+.maktub-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--maktub-text);
+}
+
+.maktub-back-link {
+    background: none;
+    border: none;
+    color: var(--maktub-primary);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.875rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.maktub-back-link:hover {
+    text-decoration: underline;
 }
 
 /* Search Bar */

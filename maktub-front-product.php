@@ -3,7 +3,7 @@
  * Plugin Name: Maktub Front Product Manager
  * Plugin URI: https://github.com/Aalveshost/maktub-front-product
  * Description: Interface premium para edição de produtos (Preço e Status) no frontend. Integrado com Jet Engine e WooCommerce.
- * Version: 1.1.3
+ * Version: 1.1.4
  * Author: Antigravity AI
  * Author URI: https://google.com
  * Text Domain: maktub-front
@@ -30,7 +30,7 @@ final class Maktub_Front_Product {
 	}
 
 	private function define_constants() {
-		define( 'MAKTUB_FRONT_VERSION', '1.1.3' );
+		define( 'MAKTUB_FRONT_VERSION', '1.1.4' );
 		define( 'MAKTUB_FRONT_PATH', plugin_dir_path( __FILE__ ) );
 		define( 'MAKTUB_FRONT_URL', plugin_dir_url( __FILE__ ) );
 	}
@@ -47,7 +47,16 @@ final class Maktub_Front_Product {
 	}
 
 	public function render_edit_shortcode() {
-		return '<button class="maktub-dashboard-trigger" title="Gerenciar Produtos"><i class="dashicons dashicons-admin-generic"></i></button>';
+		return '
+			<div class="maktub-triggers-wrapper">
+				<button class="maktub-dashboard-trigger maktub-trigger-classic" title="Lista Rápida">
+					<i class="dashicons dashicons-admin-generic"></i>
+				</button>
+				<button class="maktub-dashboard-trigger maktub-trigger-grid" title="Categorias">
+					<i class="dashicons dashicons-grid-view"></i>
+				</button>
+			</div>
+		';
 	}
 
 	public function enqueue_assets() {
@@ -86,18 +95,17 @@ final class Maktub_Front_Product {
 			<div class="maktub-modal-overlay"></div>
 			<div class="maktub-modal-content maktub-modal-large">
 				<div class="maktub-modal-header">
-					<h3>Gerenciar Maktub</h3>
+					<button id="maktub-btn-back" class="maktub-back-link" style="display:none;">&larr; Voltar</button>
+					<h3 id="maktub-main-title">Gerenciar Maktub</h3>
 					<button class="maktub-modal-close">&times;</button>
 				</div>
 				
-				<!-- Search Bar -->
 				<div class="maktub-search-wrapper">
-					<input type="text" id="maktub-search" placeholder="Buscar produto por nome..." autocomplete="off">
+					<input type="text" id="maktub-search" placeholder="Buscar produto..." autocomplete="off">
 				</div>
 
-				<!-- Category Grid (Tabs evolved) -->
 				<div id="maktub-category-grid" class="maktub-grid">
-					<!-- Category cards will be here -->
+					<!-- Category cards here -->
 				</div>
 
 				<div class="maktub-modal-body">

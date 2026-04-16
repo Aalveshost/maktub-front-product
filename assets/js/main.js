@@ -7,6 +7,7 @@
         currentMode: 'classic', 
         init: function() {
             this.cacheDOM();
+            this.createToastElement();
             this.bindEvents();
         },
 
@@ -28,6 +29,21 @@
             this.$productIdInput = $('#maktub-product-id');
             this.$modalTitle = $('#maktub-modal-title');
             this.$submitBtn = this.$form.find('.maktub-btn-primary');
+        },
+
+        createToastElement: function() {
+            if ($('#maktub-toast').length === 0) {
+                $('body').append('<div id="maktub-toast" class="maktub-toast">Atualizado com sucesso!</div>');
+            }
+            this.$toast = $('#maktub-toast');
+        },
+
+        showToast: function(message) {
+            const self = this;
+            this.$toast.text(message).addClass('is-active');
+            setTimeout(function() {
+                self.$toast.removeClass('is-active');
+            }, 1500);
         },
 
         bindEvents: function() {
@@ -183,7 +199,6 @@
                 html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';
             } else {
                 filtered.forEach(item => {
-                    // PHP now normalizes status to '1' or '0'
                     const isInactive = (item.status != '1') ? 'is-inactive' : '';
                     html += `
                         <div class="maktub-list-item ${isInactive}">
@@ -219,7 +234,6 @@
                     let p = response.preco || '0';
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
-                    // PHP sends normalized status '1' or '0'
                     const isActive = (response.status == '1');
                     self.$statusToggle.prop('checked', isActive).trigger('change');
                     self.$descInput.val(response.descricao);
@@ -231,7 +245,6 @@
             const self = this;
             const productId = this.$productIdInput.val();
             let cleanPrice = this.$priceInput.val().replace(',', '.');
-            // When saving, Jet Engine core expects "Disponível" for checked state
             const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
             const data = { preco: cleanPrice, status: statusVal, descricao: this.$descInput.val() };
             this.$submitBtn.prop('disabled', true).text('Salvando...');
@@ -242,12 +255,12 @@
                 beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
                 success: function(response) {
                     self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
-                    alert(maktubData.i18n.success);
+                    self.showToast(maktubData.i18n.success); // NO MORE ALERT!
                     self.$editModal.removeClass('is-active').hide();
                     const activeCat = $('.maktub-cat-card.is-active').data('slug') || 'all';
                     self.refreshData(activeCat);
                 },
-                error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); alert(maktubData.i18n.error); }
+                error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast(maktubData.i18n.error); }
             });
         },
 

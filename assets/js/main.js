@@ -81,11 +81,6 @@
                 $(this).closest('.maktub-modal').removeClass('is-active').hide();
             });
 
-            // Close on overlay click (Only the top one)
-            $(document).on('click', '.maktub-modal-overlay', function(e) {
-                $(this).closest('.maktub-modal').removeClass('is-active').hide();
-            });
-
             // Form Submit
             this.$form.on('submit', function(e) {
                 e.preventDefault();

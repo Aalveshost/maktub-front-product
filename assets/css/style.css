@@ -1,10 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.0 - REBORN */
+/* Maktub Front Product Manager Styles v1.3.1 - STABLE UI */
 
 :root {
     --maktub-orange: #F05828;
-    --maktub-orange-hover: #d1451b;
     --maktub-bg: #ffffff;
     --maktub-text: #1f2937;
     --maktub-gray: #a8a8a8;
@@ -12,12 +11,10 @@
     --maktub-font: 'Quicksand', sans-serif;
 }
 
-/* Base Reset for all plugin elements to prevent theme interference */
 #maktub-dashboard-modal, 
 #maktub-editor-modal,
 .maktub-triggers-wrapper {
     font-family: var(--maktub-font) !important;
-    box-sizing: border-box !important;
 }
 
 #maktub-dashboard-modal *, 
@@ -53,8 +50,6 @@
 .maktub-trigger-classic { background-color: #3b82f6 !important; }
 .maktub-trigger-grid { background-color: var(--maktub-orange) !important; }
 
-.maktub-dashboard-trigger i { font-size: 24px !important; }
-
 /* Modal General Styles */
 .maktub-modal {
     position: fixed !important;
@@ -84,17 +79,11 @@
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
-    animation: maktubFadeIn 0.3s ease;
 }
 
 .maktub-modal-content.maktub-modal-large {
     max-width: 600px !important;
     height: 85vh !important;
-}
-
-@keyframes maktubFadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Header */
@@ -113,18 +102,16 @@
     color: var(--maktub-text) !important;
 }
 
-/* Back Link (CLEAN) */
+/* Back Link - REMOVED important display to allow JS show/hide */
 #maktub-dashboard-modal .maktub-back-link {
     background: none !important;
-    border: none !important; /* Fix pink border */
+    border: none !important;
+    box-shadow: none !important;
     color: var(--maktub-orange) !important;
     font-weight: 700 !important;
-    font-family: inherit !important;
     cursor: pointer !important;
     font-size: 1rem !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    display: flex !important;
+    display: flex; /* Not important here */
     align-items: center !important;
     gap: 4px !important;
 }
@@ -138,9 +125,9 @@
     cursor: pointer !important;
 }
 
-/* GRID VIEW */
+/* GRID VIEW - IMPORTANT REMOVED ON DISPLAY TO ALLOW JQUERY .hide() */
 .maktub-grid {
-    display: grid !important;
+    display: grid; 
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 1rem !important;
     padding: 1.5rem !important;
@@ -154,12 +141,6 @@
     text-align: center !important;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
     cursor: pointer !important;
-    transition: all 0.2s ease !important;
-}
-
-.maktub-cat-card:hover {
-    transform: translateY(-5px) !important;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
 }
 
 .maktub-cat-img {
@@ -187,7 +168,7 @@
     justify-content: space-between !important;
     background: #fff !important;
     border-radius: 12px !important;
-    border-left: 7px solid #FFA07A !important;
+    border-left: 7px solid var(--maktub-orange) !important;
     border-bottom: 1px solid #f1f1f1 !important;
     margin-bottom: 0.75rem !important;
     padding: 0 1rem !important;
@@ -202,17 +183,15 @@
 
 .maktub-list-item h4 {
     margin: 0 !important;
-    font-size: 1.05rem !important;
+    font-size: 1rem !important;
     font-weight: 700 !important;
 }
 
 .maktub-item-price {
     font-weight: 700 !important;
     color: var(--maktub-green) !important;
-    font-size: 1rem !important;
 }
 
-/* EDIT BUTTON (FORCE CLEAN) */
 #maktub-dashboard-modal .maktub-btn-edit {
     background-color: var(--maktub-orange) !important;
     color: #fff !important;
@@ -220,12 +199,9 @@
     border-radius: 8px !important;
     padding: 0.6rem 1.25rem !important;
     font-weight: 700 !important;
-    font-size: 0.85rem !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 5px rgba(240, 88, 40, 0.2) !important;
 }
 
-/* EDITOR POPUP FORM v1.3.0 */
+/* EDITOR POPUP v1.3.1 */
 .maktub-field-group {
     position: relative !important;
     margin-bottom: 2rem !important;
@@ -252,12 +228,11 @@
     padding: 0 12px !important;
     font-weight: 500 !important;
     color: #000 !important;
-    font-family: inherit !important;
 }
 
 .maktub-field-group textarea { height: auto !important; min-height: 80px !important; padding: 10px !important; }
 
-/* MINIMAL STATUS TOGGLE */
+/* TOGGLE v1.3.1 */
 .maktub-toggle-wrapper {
     display: flex !important;
     align-items: center !important;
@@ -292,11 +267,10 @@
 .maktub-toggle-checkbox:not(:checked) + .maktub-toggle-label { background-color: #ef4444 !important; }
 .maktub-toggle-checkbox:checked + .maktub-toggle-label::after { left: 24px !important; }
 
-#maktub-status-text { font-weight: 700 !important; font-size: 0.95rem !important; }
+#maktub-status-text { font-weight: 700 !important; }
 .status-is-ativo { color: #10b981 !important; }
 .status-is-inativo { color: #ef4444 !important; }
 
-/* SAVE BUTTON (FORCE CLEAN) */
 #maktub-edit-form .maktub-btn-primary {
     background-color: var(--maktub-orange) !important;
     color: #fff !important;
@@ -304,6 +278,4 @@
     border-radius: 10px !important;
     padding: 0.85rem 2rem !important;
     font-weight: 700 !important;
-    cursor: pointer !important;
-    width: auto !important;
 }

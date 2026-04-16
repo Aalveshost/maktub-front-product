@@ -74,7 +74,7 @@
                 }
             });
 
-            // Close CURRENT active Modal (Only the one being clicked)
+            // Close CURRENT active Modal
             $(document).on('click', '.maktub-modal-close', function(e) {
                 e.stopPropagation();
                 $(this).closest('.maktub-modal').removeClass('is-active').hide();
@@ -145,8 +145,8 @@
         showGridOnly: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Escolha uma Categoria');
-            this.$grid.show(); // Show grid
-            this.$modalBody.hide(); // STACK FIX: Hide list body entirely
+            this.$grid.css('display', 'grid').show(); // Force show grid
+            this.$modalBody.css('display', 'none').hide(); // Force hide product list
 
             let gridHtml = '';
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
@@ -172,8 +172,8 @@
         showClassicView: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Gerenciar Maktub');
-            this.$grid.show(); 
-            this.$modalBody.show(); 
+            this.$grid.css('display', 'grid').show(); 
+            this.$modalBody.css('display', 'block').show(); 
 
             let gridHtml = `
                 <div class="maktub-cat-card" data-slug="all">
@@ -209,8 +209,8 @@
             const cat = this.categories.find(c => c.slug === slug);
             this.$mainTitle.text(cat ? cat.name : 'Produtos');
             this.$btnBack.show();
-            this.$grid.hide(); // STACK FIX: Hide grid entirely
-            this.$modalBody.show(); // Show list container
+            this.$grid.css('display', 'none').hide(); // Ensure grid is gone
+            this.$modalBody.css('display', 'block').show(); // Show list
             
             this.renderList(slug);
         },
@@ -230,7 +230,7 @@
                 html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';
             } else {
                 filtered.forEach(item => {
-                    const isInactive = (item.status === 0 || item.status === '0') ? 'is-inactive' : '';
+                    const isInactive = (item.status == 0 || item.status == '0' || !item.status) ? 'is-inactive' : '';
                     
                     html += `
                         <div class="maktub-list-item ${isInactive}">
@@ -270,7 +270,12 @@
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
 
-                    const isActive = (response.status == 1);
+                    // ROBUST STATUS MAPPING
+                    // Jet Engine checkboxes usually return "1", "true", or an array. 
+                    // We check if it's truthy or "1"
+                    const status = response.status;
+                    const isActive = (status == 1 || status === "1" || status === true || status === "true" || status === "on");
+                    
                     self.$statusToggle.prop('checked', isActive).trigger('change');
                     
                     self.$descInput.val(response.descricao);

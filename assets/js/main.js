@@ -57,10 +57,8 @@
                 const slug = $(this).data('slug');
                 
                 if (self.currentMode === 'grid') {
-                    // Navigate to Category
                     self.showListForCategory(slug);
                 } else {
-                    // Just filter
                     $('.maktub-cat-card').removeClass('is-active');
                     $(this).addClass('is-active');
                     self.renderList(slug);
@@ -124,7 +122,6 @@
             
             this.$btnBack.hide();
             this.$mainTitle.text('Gerenciar Maktub');
-            this.$modalBody.show();
 
             $.ajax({
                 url: `${maktubData.restUrl}/products`,
@@ -148,8 +145,8 @@
         showGridOnly: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Escolha uma Categoria');
-            this.$modalBody.hide();
             this.$grid.show();
+            this.$modalBody.hide(); // List container hidden
 
             let gridHtml = '';
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
@@ -175,8 +172,8 @@
         showClassicView: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Gerenciar Maktub');
-            this.$modalBody.show();
-            this.$grid.show();
+            this.$grid.show(); // Horizontal categories
+            this.$modalBody.show(); // Product list
 
             let gridHtml = `
                 <div class="maktub-cat-card" data-slug="all">
@@ -212,8 +209,8 @@
             const cat = this.categories.find(c => c.slug === slug);
             this.$mainTitle.text(cat ? cat.name : 'Produtos');
             this.$btnBack.show();
-            this.$grid.hide();
-            this.$modalBody.show();
+            this.$grid.hide(); // Hide category grid
+            this.$modalBody.show(); // Show product list container
             
             this.renderList(slug);
         },
@@ -275,7 +272,6 @@
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
 
-                    // Sync Toggle
                     const isActive = (response.status == 1);
                     self.$statusToggle.prop('checked', isActive).trigger('change');
                     

@@ -17,10 +17,8 @@
             this.$loader = $('#maktub-loader');
             this.$list = $('#maktub-dashboard-list');
             this.$grid = $('#maktub-category-grid');
-            this.$searchInput = $('#maktub-search');
             this.$btnBack = $('#maktub-btn-back');
             this.$mainTitle = $('#maktub-main-title');
-            this.$searchWrapper = $('.maktub-search-wrapper');
             this.$modalBody = $('.maktub-modal-body');
             
             this.$priceInput = $('#maktub-price');
@@ -53,13 +51,6 @@
                 self.showGridOnly();
             });
 
-            // Handle Search
-            this.$searchInput.on('input', function() {
-                const term = $(this).val().toLowerCase();
-                const activeCat = $('.maktub-cat-card.is-active').data('slug') || 'all';
-                self.renderList(activeCat, term);
-            });
-
             // Handle Grid Card Clicks
             $(document).on('click', '.maktub-cat-card', function() {
                 const slug = $(this).data('slug');
@@ -71,7 +62,7 @@
                     // Just filter
                     $('.maktub-cat-card').removeClass('is-active');
                     $(this).addClass('is-active');
-                    self.renderList(slug, self.$searchInput.val());
+                    self.renderList(slug);
                 }
             });
 
@@ -107,12 +98,10 @@
             this.$dashModal.addClass('is-active').show();
             this.$list.empty();
             this.$grid.empty();
-            this.$searchInput.val('');
             
             // Reset UI
             this.$btnBack.hide();
             this.$mainTitle.text('Gerenciar Maktub');
-            this.$searchWrapper.show();
             this.$modalBody.show();
 
             $.ajax({
@@ -137,22 +126,28 @@
         showGridOnly: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Escolha uma Categoria');
-            this.$searchWrapper.hide();
             this.$modalBody.hide();
-            this.$grid.show().css('border-bottom', 'none');
+            this.$grid.show();
 
             let gridHtml = '';
             
-            // For now, only show Pastel Salgado as requested
-            const filteredCats = this.categories.filter(c => c.slug === 'pastel-salgado');
+            // Sequential list of categories as requested
+            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
             
-            filteredCats.forEach(cat => {
-                gridHtml += `
-                    <div class="maktub-cat-card" data-slug="${cat.slug}">
-                        <div class="maktub-cat-img">🥟</div>
-                        <h5>${cat.name}</h5>
-                    </div>
-                `;
+            slugsToShow.forEach(slug => {
+                const cat = this.categories.find(c => c.slug === slug);
+                if (cat) {
+                    let icon = '🥟';
+                    if (slug.includes('doce')) icon = '🍩';
+                    if (slug.includes('especial')) icon = '🌟';
+
+                    gridHtml += `
+                        <div class="maktub-cat-card" data-slug="${cat.slug}">
+                            <div class="maktub-cat-img">${icon}</div>
+                            <h5>${cat.name}</h5>
+                        </div>
+                    `;
+                }
             });
             this.$grid.html(gridHtml);
         },
@@ -160,9 +155,9 @@
         showClassicView: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Gerenciar Maktub');
-            this.$searchWrapper.show();
             this.$modalBody.show();
-            this.$grid.show().css('border-bottom', '1px solid rgba(0,0,0,0.05)');
+            this.$grid.show();
+            this.$grid.css('border-bottom', '1px solid rgba(0,0,0,0.05)');
 
             let gridHtml = `
                 <div class="maktub-cat-card" data-slug="all">
@@ -171,6 +166,7 @@
                 </div>
             `;
             
+            // Show all categories in order for classic
             this.categories.forEach(cat => {
                 let icon = '📦';
                 const slug = cat.slug.toLowerCase();
@@ -199,13 +195,12 @@
             this.$mainTitle.text(cat ? cat.name : 'Produtos');
             this.$btnBack.show();
             this.$grid.hide();
-            this.$searchWrapper.show();
             this.$modalBody.show();
             
             this.renderList(slug);
         },
 
-        renderList: function(categorySlug, searchTerm = '') {
+        renderList: function(categorySlug) {
             const self = this;
             let html = '';
             
@@ -213,10 +208,6 @@
 
             if (categorySlug !== 'all') {
                 filtered = filtered.filter(p => p.cat === categorySlug);
-            }
-
-            if (searchTerm) {
-                filtered = filtered.filter(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
             }
 
             if (filtered.length === 0) {
@@ -288,7 +279,6 @@
                     alert(maktubData.i18n.success);
                     self.$editModal.removeClass('is-active').hide();
                     
-                    // Refresh data but stay in current sub-view
                     const activeCat = $('.maktub-cat-card.is-active').data('slug') || 'all';
                     self.refreshData(activeCat);
                 },
@@ -309,7 +299,7 @@
                 },
                 success: function(response) {
                     self.allProducts = response.products;
-                    self.renderList(activeCat, self.$searchInput.val());
+                    self.renderList(activeCat);
                 }
             });
         }

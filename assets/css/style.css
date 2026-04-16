@@ -288,9 +288,7 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 0.75rem;
     padding: 0 1.5rem 1rem;
-    max-height: 180px;
-    overflow-y: auto;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    overflow-y: visible; /* Flow naturally */
 }
 
 .maktub-cat-card {

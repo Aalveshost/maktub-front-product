@@ -131,7 +131,6 @@
 
             let gridHtml = '';
             
-            // Sequential list of categories as requested
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
             
             slugsToShow.forEach(slug => {
@@ -157,7 +156,6 @@
             this.$mainTitle.text('Gerenciar Maktub');
             this.$modalBody.show();
             this.$grid.show();
-            this.$grid.css('border-bottom', '1px solid rgba(0,0,0,0.05)');
 
             let gridHtml = `
                 <div class="maktub-cat-card" data-slug="all">
@@ -166,7 +164,6 @@
                 </div>
             `;
             
-            // Show all categories in order for classic
             this.categories.forEach(cat => {
                 let icon = '📦';
                 const slug = cat.slug.toLowerCase();
@@ -204,11 +201,14 @@
             const self = this;
             let html = '';
             
-            let filtered = this.allProducts;
+            let filtered = [...this.allProducts];
 
             if (categorySlug !== 'all') {
                 filtered = filtered.filter(p => p.cat === categorySlug);
             }
+
+            // Alphabetical Sort
+            filtered.sort((a, b) => a.title.localeCompare(b.title));
 
             if (filtered.length === 0) {
                 html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';

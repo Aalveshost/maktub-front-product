@@ -72,9 +72,26 @@
 
 .maktub-modal-header h3 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--maktub-text);
+}
+
+.maktub-back-link {
+    background: none;
+    border: none;
+    color: var(--maktub-primary);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.875rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.maktub-back-link:hover {
+    text-decoration: underline;
 }
 
 .maktub-modal-close {
@@ -91,6 +108,7 @@
     color: var(--maktub-text);
 }
 
+/* Fields */
 .maktub-field-group {
     margin-bottom: 1.5rem;
 }
@@ -152,10 +170,6 @@
     box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
 }
 
-.maktub-btn-primary:active {
-    transform: translateY(0);
-}
-
 /* Loader */
 .maktub-loader {
     width: 24px;
@@ -170,26 +184,6 @@
 @keyframes maktub-spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
-
-/* Edit Trigger Button Styling (Optional to apply via CSS if needed) */
-.maktub-edit-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--maktub-primary);
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.maktub-edit-trigger:hover {
-    filter: brightness(1.1);
 }
 
 /* Dashboard Shortcode Triggers */
@@ -219,11 +213,11 @@
 }
 
 .maktub-trigger-classic {
-    background: #3b82f6; /* Azul */
+    background: #3b82f6;
 }
 
 .maktub-trigger-grid {
-    background: #8b5cf6; /* Roxo */
+    background: #8b5cf6;
 }
 
 .maktub-dashboard-trigger:hover {
@@ -235,60 +229,13 @@
     font-size: 28px;
 }
 
-.maktub-modal-header h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--maktub-text);
-}
-
-.maktub-back-link {
-    background: none;
-    border: none;
-    color: var(--maktub-primary);
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.875rem;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.maktub-back-link:hover {
-    text-decoration: underline;
-}
-
-/* Search Bar */
-.maktub-search-wrapper {
-    padding: 0 1.5rem 1rem;
-}
-
-.maktub-search-wrapper input {
-    width: 100%;
-    padding: 1rem 1.5rem;
-    border-radius: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    background: rgba(255, 255, 255, 0.6);
-    font-size: 1rem;
-    transition: all 0.3s;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.maktub-search-wrapper input:focus {
-    outline: none;
-    border-color: var(--maktub-primary);
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
-}
-
 /* Category Grid */
 .maktub-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.75rem;
     padding: 0 1.5rem 1rem;
-    overflow-y: visible; /* Flow naturally */
+    overflow-y: visible;
 }
 
 .maktub-cat-card {
@@ -326,69 +273,74 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-}
-
-.maktub-cat-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    font-size: 2rem;
 }
 
 .maktub-cat-card h5 {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.825rem;
     font-weight: 600;
     color: var(--maktub-text);
 }
 
-/* Product List in Modal */
+/* Modal Body & List Content */
 .maktub-modal-body {
     flex: 1;
     overflow-y: auto;
     padding: 1rem 1.5rem;
 }
 
-.maktub-list {
-    /* overflow-y handled by modal-body */
-}
-
 .maktub-list-item {
+    margin-bottom: 0.5rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 12px;
-    margin-bottom: 0.75rem;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: background 0.2s;
+    justify-content: space-between;
+    border-radius: 7px;
+    background-color: #FFF;
+    height: 80px;
+    border: solid 7px #FFA07A;
+    border-top: 0px;
+    border-right: 0px;
+    border-bottom: 1px solid #f1f1f1;
+    box-shadow: 0px -2px 2px 0px rgba(0, 0, 0, 0.18);
+    padding: 0 1rem;
+    transition: transform 0.2s;
 }
 
 .maktub-list-item:hover {
-    background: rgba(255, 255, 255, 0.6);
+    transform: translateX(4px);
 }
 
-.maktub-item-info h4 {
-    margin: 0 0 0.25rem;
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--maktub-text);
+.maktub-item-info {
+    flex: 1;
 }
 
 .maktub-item-info .maktub-category-label {
     display: inline-block;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     background: rgba(0, 0, 0, 0.05);
-    padding: 2px 8px;
+    padding: 1px 6px;
     border-radius: 4px;
-    margin-bottom: 0.5rem;
-    color: var(--maktub-text-muted);
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.maktub-item-info h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--maktub-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .maktub-item-price {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: #10b981; /* Destaque verde */
+    color: #10b981;
+    margin-top: 2px;
 }
 
 .maktub-item-actions .maktub-btn-edit {
@@ -396,7 +348,8 @@
     background: var(--maktub-primary);
     color: white;
     border-radius: 8px;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     border: none;
     cursor: pointer;
+    font-weight: 600;
 }

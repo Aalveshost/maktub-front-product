@@ -75,10 +75,27 @@
                 }
             });
 
-            // Close CURRENT active Modal (Only the one being clicked)
+            // Close CURRENT active Modal
             $(document).on('click', '.maktub-modal-close', function(e) {
                 e.stopPropagation();
                 $(this).closest('.maktub-modal').removeClass('is-active').hide();
+            });
+
+            // Financial Price Mask logic
+            this.$priceInput.on('input', function() {
+                let v = $(this).val().replace(/\D/g, ''); // Digits only
+                if (v.length > 5) v = v.substring(0, 5); // Limit to 999,99 (actually 99900)
+                
+                // Cap at 99900 (999,00)
+                if (parseInt(v) > 99900) v = '99900';
+
+                if (v === '') {
+                    $(this).val('');
+                    return;
+                }
+
+                v = (parseInt(v) / 100).toFixed(2).replace('.', ',');
+                $(this).val(v);
             });
 
             // Form Submit
@@ -247,8 +264,16 @@
                     self.$loader.hide();
                     self.$form.show();
                     self.$modalTitle.text(response.title);
-                    self.$priceInput.val(response.preco);
-                    self.$statusSelect.val(response.status ? response.status : '0');
+                    
+                    // Format initial price for the mask
+                    let p = response.preco || '0';
+                    p = parseFloat(p).toFixed(2).replace('.', ',');
+                    self.$priceInput.val(p);
+
+                    // Map status correctly (coerce to string just in case)
+                    const statusVal = response.status !== undefined ? String(response.status) : '0';
+                    self.$statusSelect.val(statusVal);
+                    
                     self.$descInput.val(response.descricao);
                 }
             });
@@ -257,8 +282,12 @@
         saveData: function() {
             const self = this;
             const productId = this.$productIdInput.val();
+            
+            // Convert back from 12,50 to 12.50 before saving
+            let cleanPrice = this.$priceInput.val().replace(',', '.');
+
             const data = {
-                preco: this.$priceInput.val(),
+                preco: cleanPrice,
                 status: this.$statusSelect.val(),
                 descricao: this.$descInput.val()
             };

@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.2 - STABLE UI */
+/* Maktub Front Product Manager Styles v1.3.3 - STABLE UI */
 
 :root {
     --maktub-orange: #F05828;
@@ -175,10 +175,10 @@
     box-shadow: 0 3px 10px rgba(0,0,0,0.03) !important;
 }
 
-/* Darker soft red for inactive items v1.3.2 */
+/* Much darker soft red for inactive items v1.3.3 */
 .maktub-list-item.is-inactive {
-    background-color: rgba(239, 68, 68, 0.12) !important;
-    border-left-color: #f87171 !important;
+    background-color: rgba(239, 68, 68, 0.20) !important;
+    border-left-color: #ef4444 !important;
 }
 
 .maktub-list-item h4 {
@@ -201,7 +201,7 @@
     font-weight: 700 !important;
 }
 
-/* EDITOR POPUP v1.3.2 */
+/* EDITOR POPUP v1.3.3 */
 .maktub-field-group {
     position: relative !important;
     margin-bottom: 2rem !important;
@@ -232,7 +232,7 @@
 
 .maktub-field-group textarea { height: auto !important; min-height: 80px !important; padding: 10px !important; }
 
-/* TOGGLE v1.3.2 */
+/* TOGGLE v1.3.3 */
 .maktub-toggle-wrapper {
     display: flex !important;
     align-items: center !important;

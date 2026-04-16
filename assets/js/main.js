@@ -4,7 +4,7 @@
     const MaktubEditor = {
         allProducts: [],
         categories: [],
-        currentMode: 'classic', // 'classic' or 'grid'
+        currentMode: 'classic', 
         init: function() {
             this.cacheDOM();
             this.bindEvents();
@@ -28,13 +28,6 @@
             this.$productIdInput = $('#maktub-product-id');
             this.$modalTitle = $('#maktub-modal-title');
             this.$submitBtn = this.$form.find('.maktub-btn-primary');
-        },
-
-        isProductStatusActive: function(status) {
-            if (!status) return false;
-            // Handle JET ENGINE specific values (Disponível, 1, true, on)
-            const s = String(status).toLowerCase();
-            return (s === '1' || s === 'true' || s === 'on' || s === 'disponível');
         },
 
         bindEvents: function() {
@@ -190,7 +183,8 @@
                 html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';
             } else {
                 filtered.forEach(item => {
-                    const isInactive = !self.isProductStatusActive(item.status) ? 'is-inactive' : '';
+                    // PHP now normalizes status to '1' or '0'
+                    const isInactive = (item.status != '1') ? 'is-inactive' : '';
                     html += `
                         <div class="maktub-list-item ${isInactive}">
                             <div class="maktub-item-info">
@@ -225,8 +219,8 @@
                     let p = response.preco || '0';
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
-                    // Sync Status
-                    const isActive = self.isProductStatusActive(response.status);
+                    // PHP sends normalized status '1' or '0'
+                    const isActive = (response.status == '1');
                     self.$statusToggle.prop('checked', isActive).trigger('change');
                     self.$descInput.val(response.descricao);
                 }
@@ -237,7 +231,7 @@
             const self = this;
             const productId = this.$productIdInput.val();
             let cleanPrice = this.$priceInput.val().replace(',', '.');
-            // When saving, we send "Disponível" if checked, or an empty string if not (to match Jet Engine)
+            // When saving, Jet Engine core expects "Disponível" for checked state
             const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
             const data = { preco: cleanPrice, status: statusVal, descricao: this.$descInput.val() };
             this.$submitBtn.prop('disabled', true).text('Salvando...');

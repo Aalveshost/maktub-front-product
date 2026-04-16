@@ -66,11 +66,17 @@ class Maktub_API_Handler {
 
 		foreach ( $posts as $post ) {
 			$terms = wp_get_post_terms( $post->ID, 'maktub-categorias' );
+			
+			// Normalize status for initial list
+			$status_raw = get_post_meta( $post->ID, 'status', true );
+			$status_clean = ! empty( $status_raw ) ? '1' : '0';
+
 			$prod_data[] = array(
-				'id'    => $post->ID,
-				'title' => $post->post_title,
-				'price' => get_post_meta( $post->ID, $price_field, true ),
-				'cat'   => ! empty( $terms ) ? $terms[0]->slug : 'uncategorized',
+				'id'     => $post->ID,
+				'title'  => $post->post_title,
+				'price'  => get_post_meta( $post->ID, $price_field, true ),
+				'status' => $status_clean,
+				'cat'    => ! empty( $terms ) ? $terms[0]->slug : 'uncategorized',
 			);
 		}
 
@@ -88,11 +94,15 @@ class Maktub_API_Handler {
 			return new WP_Error( 'no_product', 'Não encontrado', array( 'status' => 404 ) );
 		}
 
+		// Normalize status for single product view
+		$status_raw = get_post_meta( $id, 'status', true );
+		$status_clean = ! empty( $status_raw ) ? '1' : '0';
+
 		return rest_ensure_response( array(
 			'id'        => $id,
 			'title'     => $post->post_title,
 			'preco'     => get_post_meta( $id, 'preco', true ),
-			'status'    => get_post_meta( $id, 'status', true ),
+			'status'    => $status_clean,
 			'descricao' => get_post_meta( $id, 'descricao', true ),
 		) );
 	}

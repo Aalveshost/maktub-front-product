@@ -314,9 +314,6 @@
             });
         }
     };
-});
-        }
-    };
 
     $(document).ready(function() {
         MaktubEditor.init();

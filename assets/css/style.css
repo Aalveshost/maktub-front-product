@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.2.0 */
+/* Maktub Front Product Manager Styles v1.2.2 */
 
 :root {
-    --maktub-primary: #F05828; /* Laranja conforme inspetor */
+    --maktub-primary: #F05828;
     --maktub-primary-hover: #d1451b;
     --maktub-bg-glass: hsl(0, 100%, 99%);
     --maktub-border-glass: rgba(0, 0, 0, 0.05);
@@ -11,6 +11,8 @@
     --maktub-text: #1f2937;
     --maktub-text-muted: #6b7280;
     --maktub-font: 'Quicksand', sans-serif;
+    --maktub-green: #065f46; /* Verde mais escuro conforme solicitado */
+    --maktub-red: #ef4444;
 }
 
 body {
@@ -27,7 +29,6 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-    font-family: var(--maktub-font);
 }
 
 .maktub-modal.is-active {
@@ -80,7 +81,6 @@ body {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--maktub-text);
 }
 
 .maktub-modal-close {
@@ -99,26 +99,7 @@ body {
     border-radius: 50%;
 }
 
-.maktub-modal-close:hover {
-    background: rgba(0,0,0,0.05);
-    color: var(--maktub-text);
-}
-
-.maktub-back-link {
-    background: none;
-    border: none;
-    color: var(--maktub-primary);
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 0.875rem;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: inherit;
-}
-
-/* Styled Fields v1.2.0 */
+/* Fields Styling */
 .maktub-field-group {
     position: relative;
     margin-bottom: 2rem;
@@ -134,23 +115,23 @@ body {
     background: var(--maktub-bg-glass);
     padding: 2px 8px;
     font-size: 0.85rem;
-    font-weight: 700; /* Texto grosso solicitado */
+    font-weight: 700;
     color: var(--maktub-primary);
     z-index: 10;
     border-radius: 4px;
 }
 
 .maktub-field-group input,
-.maktub-field-group select,
 .maktub-field-group textarea {
     width: 100%;
     height: 44px;
     padding: 0 1.25rem;
-    border-radius: 12px; /* Aumentado para o efeito 'curvado' */
+    border-radius: 12px;
     border: solid 2px #a8a8a8;
     background: transparent;
-    font-size: 0.9375rem;
-    color: var(--maktub-text);
+    font-size: 1rem;
+    font-weight: 500; /* Peso 500 solicitado */
+    color: #000; /* Preto puro solicitado */
     transition: all 0.2s;
     font-family: inherit;
     box-sizing: border-box;
@@ -161,46 +142,115 @@ body {
     padding: 12px 1.25rem;
 }
 
-.maktub-field-group input:focus,
-.maktub-field-group select:focus,
-.maktub-field-group textarea:focus {
-    outline: none;
-    border-color: var(--maktub-primary);
-    background: #fff;
-    box-shadow: 0 0 0 4px rgba(240, 88, 40, 0.05);
+/* Toggle Switch Styling */
+.maktub-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 1.25rem;
+    border: solid 2px #a8a8a8;
+    border-radius: 12px;
 }
 
-/* Button Refinement */
-.maktub-modal-footer {
-    padding: 0.5rem 1.5rem 1.5rem;
-    text-align: left;
+.maktub-toggle-checkbox {
+    display: none;
 }
 
-/* Enforcing branding with !important to prevent theme overrides */
+.maktub-toggle-label {
+    position: relative;
+    width: 50px;
+    height: 26px;
+    background: #ccc;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.maktub-toggle-label::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.maktub-toggle-checkbox:checked + .maktub-toggle-label {
+    background: #10b981; /* Verde Ativo */
+}
+
+.maktub-toggle-checkbox:not(:checked) + .maktub-toggle-label {
+    background: #ef4444; /* Vermelho Inativo */
+}
+
+.maktub-toggle-checkbox:checked + .maktub-toggle-label::after {
+    left: 27px;
+}
+
+#maktub-status-text {
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--maktub-text);
+}
+
+.status-is-ativo { color: #059669 !important; }
+.status-is-inativo { color: #dc2626 !important; }
+
+/* List Item States */
+.maktub-list-item {
+    margin-bottom: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 10px;
+    background-color: #FFF;
+    height: 80px;
+    border: solid 7px #FFA07A;
+    border-top: 0px;
+    border-right: 0px;
+    border-bottom: 1px solid #f1f1f1;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.04);
+    padding: 0 1.25rem;
+    transition: all 0.2s;
+}
+
+/* Inactive state background */
+.maktub-list-item.is-inactive {
+    background-color: rgba(239, 68, 68, 0.06); /* Vermelho fraco opacidade solicitado */
+    border-color: #fecaca; /* Cor da barra lateral muda tmb */
+}
+
+.maktub-list-item.is-inactive h4 {
+    opacity: 0.6;
+}
+
+.maktub-item-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--maktub-green); /* Verde escurecido solicitado */
+}
+
+/* Primary Button High Specificity */
 .maktub-btn-primary {
-    display: inline-block;
+    display: inline-block !important;
     width: auto !important;
     min-width: 180px;
-    padding: 0.875rem 2rem !important;
+    padding: 0.875rem 2.5rem !important;
     background-color: var(--maktub-primary) !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 10px !important;
+    border-radius: 12px !important;
     font-weight: 700 !important;
     font-size: 1rem !important;
     cursor: pointer !important;
     font-family: var(--maktub-font) !important;
-    transition: all 0.3s ease !important;
     box-shadow: 0 4px 15px rgba(240, 88, 40, 0.3) !important;
 }
 
-.maktub-btn-primary:hover {
-    background-color: var(--maktub-primary-hover) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(240, 88, 40, 0.4) !important;
-}
-
-/* Triggers */
+/* Rest of the UI Triggers */
 .maktub-triggers-wrapper {
     position: fixed;
     bottom: 30px;
@@ -223,107 +273,5 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Grid & List Styles Unchanged */
-.maktub-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-    padding: 0 1.5rem 1rem;
-}
-
-.maktub-cat-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 0.5rem;
-    text-align: center;
-    cursor: pointer;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.maktub-cat-card.is-active {
-    background: var(--maktub-primary);
-}
-
-.maktub-cat-card.is-active h5 {
-    color: white;
-}
-
-.maktub-cat-img {
-    width: 100%;
-    aspect-ratio: 1;
-    background: #fdfdfd;
-    border-radius: 12px;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-}
-
-.maktub-cat-card h5 {
-    margin: 0;
-    font-size: 0.825rem;
-    font-weight: 700;
-}
-
-.maktub-modal-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem 1.5rem;
-}
-
-.maktub-list-item {
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: 7px;
-    background-color: #FFF;
-    height: 80px;
-    border: solid 7px #FFA07A;
-    border-top: 0px;
-    border-right: 0px;
-    border-bottom: 1px solid #f1f1f1;
-    box-shadow: 0px -2px 2px 0px rgba(0, 0, 0, 0.18);
-    padding: 0 1rem;
-}
-
-.maktub-item-info h4 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--maktub-text);
-}
-
-.maktub-category-label {
-    display: inline-block;
-    font-size: 0.65rem;
-    background: #fdf2f0;
-    color: var(--maktub-primary);
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-bottom: 2px;
-    font-weight: 700;
-}
-
-.maktub-item-price {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #10b981;
-}
-
-.maktub-item-actions .maktub-btn-edit {
-    padding: 0.65rem 1.25rem;
-    background: var(--maktub-primary);
-    color: white;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    border: none;
-    cursor: pointer;
-    font-weight: 700;
+    transition: all 0.3s;
 }

@@ -22,7 +22,8 @@
             this.$modalBody = $('.maktub-modal-body');
             
             this.$priceInput = $('#maktub-price');
-            this.$statusSelect = $('#maktub-status');
+            this.$statusToggle = $('#maktub-status-toggle');
+            this.$statusText = $('#maktub-status-text');
             this.$descInput = $('#maktub-desc');
             this.$productIdInput = $('#maktub-product-id');
             this.$modalTitle = $('#maktub-modal-title');
@@ -83,19 +84,23 @@
 
             // Financial Price Mask logic
             this.$priceInput.on('input', function() {
-                let v = $(this).val().replace(/\D/g, ''); // Digits only
-                if (v.length > 5) v = v.substring(0, 5); // Limit to 999,99 (actually 99900)
-                
-                // Cap at 99900 (999,00)
+                let v = $(this).val().replace(/\D/g, ''); 
+                if (v.length > 5) v = v.substring(0, 5); 
                 if (parseInt(v) > 99900) v = '99900';
-
                 if (v === '') {
                     $(this).val('');
                     return;
                 }
-
                 v = (parseInt(v) / 100).toFixed(2).replace('.', ',');
                 $(this).val(v);
+            });
+
+            // Toggle Text Update
+            this.$statusToggle.on('change', function() {
+                const isChecked = $(this).is(':checked');
+                self.$statusText.text(isChecked ? 'Ativo' : 'Inativo');
+                self.$statusText.removeClass('status-is-ativo status-is-inativo');
+                self.$statusText.addClass(isChecked ? 'status-is-ativo' : 'status-is-inativo');
             });
 
             // Form Submit
@@ -117,7 +122,6 @@
             this.$list.empty();
             this.$grid.empty();
             
-            // Reset UI
             this.$btnBack.hide();
             this.$mainTitle.text('Gerenciar Maktub');
             this.$modalBody.show();
@@ -230,8 +234,10 @@
             } else {
                 filtered.forEach(item => {
                     const catName = self.categories.find(c => c.slug === item.cat)?.name || 'Outros';
+                    const isInactive = (item.status === 0 || item.status === '0') ? 'is-inactive' : '';
+                    
                     html += `
-                        <div class="maktub-list-item">
+                        <div class="maktub-list-item ${isInactive}">
                             <div class="maktub-item-info">
                                 <div class="maktub-category-label">${catName}</div>
                                 <h4>${item.title}</h4>
@@ -265,14 +271,13 @@
                     self.$form.show();
                     self.$modalTitle.text(response.title);
                     
-                    // Format initial price for the mask
                     let p = response.preco || '0';
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
 
-                    // Map status correctly (coerce to string just in case)
-                    const statusVal = response.status !== undefined ? String(response.status) : '0';
-                    self.$statusSelect.val(statusVal);
+                    // Sync Toggle
+                    const isActive = (response.status == 1);
+                    self.$statusToggle.prop('checked', isActive).trigger('change');
                     
                     self.$descInput.val(response.descricao);
                 }
@@ -283,12 +288,12 @@
             const self = this;
             const productId = this.$productIdInput.val();
             
-            // Convert back from 12,50 to 12.50 before saving
             let cleanPrice = this.$priceInput.val().replace(',', '.');
+            const statusVal = this.$statusToggle.is(':checked') ? 1 : 0;
 
             const data = {
                 preco: cleanPrice,
-                status: this.$statusSelect.val(),
+                status: statusVal,
                 descricao: this.$descInput.val()
             };
 

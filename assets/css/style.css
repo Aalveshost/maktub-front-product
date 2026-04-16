@@ -1,13 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
 /* Maktub Front Product Manager Styles */
 
 :root {
-    --maktub-primary: #6366f1;
-    --maktub-primary-hover: #4f46e5;
+    --maktub-primary: hsl(24, 74%, 56%); /* Orange #E27D3B */
+    --maktub-primary-hover: hsl(24, 74%, 50%);
     --maktub-bg-glass: rgba(255, 255, 255, 0.7);
     --maktub-border-glass: rgba(255, 255, 255, 0.3);
     --maktub-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
     --maktub-text: #1f2937;
     --maktub-text-muted: #6b7280;
+    --maktub-font: 'Quicksand', sans-serif;
+}
+
+body {
+    font-family: var(--maktub-font);
 }
 
 .maktub-modal {
@@ -20,6 +27,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
+    font-family: var(--maktub-font);
 }
 
 .maktub-modal.is-active {
@@ -46,7 +54,7 @@
     border: 1px solid var(--maktub-border-glass);
     border-radius: 20px;
     box-shadow: var(--maktub-shadow);
-    padding: 1.5rem 0; /* Vertical padding managed by internal layout */
+    padding: 1.5rem 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -88,6 +96,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-family: inherit;
 }
 
 .maktub-back-link:hover {
@@ -156,18 +165,19 @@
     cursor: pointer;
     transition: all 0.2s;
     border: none;
+    font-family: inherit;
 }
 
 .maktub-btn-primary {
     background: var(--maktub-primary);
     color: white;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(226, 125, 59, 0.3);
 }
 
 .maktub-btn-primary:hover {
     background: var(--maktub-primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 6px 16px rgba(226, 125, 59, 0.4);
 }
 
 /* Loader */
@@ -205,7 +215,7 @@
     color: white;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 20px rgba(226, 125, 59, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -217,7 +227,7 @@
 }
 
 .maktub-trigger-grid {
-    background: #8b5cf6;
+    background: var(--maktub-primary);
 }
 
 .maktub-dashboard-trigger:hover {
@@ -344,12 +354,20 @@
 }
 
 .maktub-item-actions .maktub-btn-edit {
-    padding: 0.5rem 1rem;
+    padding: 0.65rem 1.25rem;
     background: var(--maktub-primary);
     color: white;
     border-radius: 8px;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     border: none;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: var(--maktub-font);
+    box-shadow: 0 2px 8px rgba(226, 125, 59, 0.2);
+    transition: all 0.2s;
+}
+
+.maktub-item-actions .maktub-btn-edit:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
 }

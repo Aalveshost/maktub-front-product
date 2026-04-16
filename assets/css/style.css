@@ -1,0 +1,180 @@
+/* Maktub Front Product Manager Styles */
+
+:root {
+    --maktub-primary: #6366f1;
+    --maktub-primary-hover: #4f46e5;
+    --maktub-bg-glass: rgba(255, 255, 255, 0.7);
+    --maktub-border-glass: rgba(255, 255, 255, 0.3);
+    --maktub-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    --maktub-text: #1f2937;
+    --maktub-text-muted: #6b7280;
+}
+
+.maktub-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.maktub-modal.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.maktub-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.maktub-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 450px;
+    background: var(--maktub-bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--maktub-border-glass);
+    border-radius: 20px;
+    box-shadow: var(--maktub-shadow);
+    padding: 2rem;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.maktub-modal.is-active .maktub-modal-content {
+    transform: translateY(0);
+}
+
+.maktub-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.maktub-modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--maktub-text);
+}
+
+.maktub-modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--maktub-text-muted);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.maktub-modal-close:hover {
+    color: var(--maktub-text);
+}
+
+.maktub-field-group {
+    margin-bottom: 1.5rem;
+}
+
+.maktub-field-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--maktub-text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.maktub-field-group input,
+.maktub-field-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.5);
+    font-size: 1rem;
+    color: var(--maktub-text);
+    transition: all 0.2s;
+}
+
+.maktub-field-group input:focus,
+.maktub-field-group select:focus {
+    outline: none;
+    border-color: var(--maktub-primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.maktub-modal-footer {
+    margin-top: 2rem;
+}
+
+.maktub-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.maktub-btn-primary {
+    background: var(--maktub-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.maktub-btn-primary:hover {
+    background: var(--maktub-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.maktub-btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Loader */
+.maktub-loader {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(0,0,0,0.1);
+    border-top: 3px solid var(--maktub-primary);
+    border-radius: 50%;
+    animation: maktub-spin 1s linear infinite;
+    margin: 1rem auto;
+}
+
+@keyframes maktub-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Edit Trigger Button Styling (Optional to apply via CSS if needed) */
+.maktub-edit-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--maktub-primary);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.maktub-edit-trigger:hover {
+    filter: brightness(1.1);
+}

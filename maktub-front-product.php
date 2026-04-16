@@ -38,6 +38,7 @@ final class Maktub_Front_Product {
 	private function init_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'wp_footer', array( $this, 'render_modal_container' ) );
+		add_shortcode( 'product-edit', array( $this, 'render_edit_shortcode' ) );
 		
 		// Load REST API
 		require_once MAKTUB_FRONT_PATH . 'includes/class-api-handler.php';
@@ -45,7 +46,14 @@ final class Maktub_Front_Product {
 		add_action( 'rest_api_init', array( $api_handler, 'register_routes' ) );
 	}
 
+	public function render_edit_shortcode() {
+		return '<button class="maktub-dashboard-trigger" title="Gerenciar Produtos"><i class="dashicons dashicons-admin-generic"></i></button>';
+	}
+
 	public function enqueue_assets() {
+		// Enqueue Dashicons for the shortcode
+		wp_enqueue_style( 'dashicons' );
+
 		// Enqueue styles
 		wp_enqueue_style( 'maktub-front-style', MAKTUB_FRONT_URL . 'assets/css/style.css', array(), MAKTUB_FRONT_VERSION );
 
@@ -57,8 +65,10 @@ final class Maktub_Front_Product {
 			'restUrl'  => esc_url_raw( rest_url( 'maktub-front/v1' ) ),
 			'nonce'    => wp_create_nonce( 'wp_rest' ),
 			'settings' => array(
-				'price_field'  => get_option( 'maktub_price_field', '_price' ), // Default to WooCommerce price
-				'status_field' => get_option( 'maktub_status_field', 'post_status' ),
+				'cpt'            => 'maktub',
+				'price_field'    => 'preco',
+				'status_field'   => 'status',
+				'desc_field'     => 'descricao',
 			),
 			'i18n' => array(
 				'editing' => __( 'Editando Produto', 'maktub-front' ),
@@ -71,11 +81,28 @@ final class Maktub_Front_Product {
 
 	public function render_modal_container() {
 		?>
+		<!-- Dashboard Modal (List) -->
+		<div id="maktub-dashboard-modal" class="maktub-modal" style="display:none;">
+			<div class="maktub-modal-overlay"></div>
+			<div class="maktub-modal-content maktub-modal-large">
+				<div class="maktub-modal-header">
+					<h3>Gerenciar Maktub</h3>
+					<button class="maktub-modal-close">&times;</button>
+				</div>
+				<div class="maktub-modal-body">
+					<div id="maktub-dashboard-list" class="maktub-list">
+						<!-- List will be populated via JS -->
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Editor Modal (Item) -->
 		<div id="maktub-editor-modal" class="maktub-modal" style="display:none;">
 			<div class="maktub-modal-overlay"></div>
 			<div class="maktub-modal-content">
 				<div class="maktub-modal-header">
-					<h3 id="maktub-modal-title">Editar Produto</h3>
+					<h3 id="maktub-modal-title">Editar Item</h3>
 					<button class="maktub-modal-close">&times;</button>
 				</div>
 				<div class="maktub-modal-body">
@@ -84,17 +111,21 @@ final class Maktub_Front_Product {
 						<input type="hidden" id="maktub-product-id" name="product_id">
 						
 						<div class="maktub-field-group">
-							<label for="maktub-price">Preço (R$)</label>
-							<input type="text" id="maktub-price" name="price" placeholder="0,00">
+							<label for="maktub-price">Preço</label>
+							<input type="text" id="maktub-price" name="preco" placeholder="0.00">
 						</div>
 
 						<div class="maktub-field-group">
 							<label for="maktub-status">Status</label>
 							<select id="maktub-status" name="status">
-								<option value="publish">Publicado</option>
-								<option value="draft">Rascunho</option>
-								<option value="private">Privado</option>
+								<option value="1">Ativo</option>
+								<option value="0">Inativo</option>
 							</select>
+						</div>
+
+						<div class="maktub-field-group">
+							<label for="maktub-desc">Descrição</label>
+							<textarea id="maktub-desc" name="descricao" rows="4"></textarea>
 						</div>
 
 						<div class="maktub-modal-footer">

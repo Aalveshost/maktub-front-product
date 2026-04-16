@@ -49,6 +49,10 @@
     transition: transform 0.3s ease;
 }
 
+.maktub-modal-content.maktub-modal-large {
+    max-width: 800px;
+}
+
 .maktub-modal.is-active .maktub-modal-content {
     transform: translateY(0);
 }
@@ -94,7 +98,8 @@
 }
 
 .maktub-field-group input,
-.maktub-field-group select {
+.maktub-field-group select,
+.maktub-field-group textarea {
     width: 100%;
     padding: 0.75rem 1rem;
     border-radius: 12px;
@@ -103,10 +108,12 @@
     font-size: 1rem;
     color: var(--maktub-text);
     transition: all 0.2s;
+    font-family: inherit;
 }
 
 .maktub-field-group input:focus,
-.maktub-field-group select:focus {
+.maktub-field-group select:focus,
+.maktub-field-group textarea:focus {
     outline: none;
     border-color: var(--maktub-primary);
     box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
@@ -177,4 +184,77 @@
 
 .maktub-edit-trigger:hover {
     filter: brightness(1.1);
+}
+
+/* Dashboard Shortcode Trigger */
+.maktub-dashboard-trigger {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--maktub-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.maktub-dashboard-trigger:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+}
+
+.maktub-dashboard-trigger i {
+    font-size: 28px;
+}
+
+/* Product List in Modal */
+.maktub-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.maktub-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background 0.2s;
+}
+
+.maktub-list-item:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.maktub-item-info h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--maktub-text);
+}
+
+.maktub-item-info span {
+    font-size: 0.875rem;
+    color: var(--maktub-text-muted);
+}
+
+.maktub-item-actions .maktub-btn-edit {
+    padding: 0.5rem 1rem;
+    background: var(--maktub-primary);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
 }

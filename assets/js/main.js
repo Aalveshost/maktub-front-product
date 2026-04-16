@@ -8,11 +8,15 @@
         },
 
         cacheDOM: function() {
-            this.$modal = $('#maktub-editor-modal');
+            this.$dashModal = $('#maktub-dashboard-modal');
+            this.$editModal = $('#maktub-editor-modal');
             this.$form = $('#maktub-edit-form');
             this.$loader = $('#maktub-loader');
+            this.$list = $('#maktub-dashboard-list');
+            
             this.$priceInput = $('#maktub-price');
             this.$statusSelect = $('#maktub-status');
+            this.$descInput = $('#maktub-desc');
             this.$productIdInput = $('#maktub-product-id');
             this.$modalTitle = $('#maktub-modal-title');
             this.$submitBtn = this.$form.find('button[type="submit"]');
@@ -21,23 +25,24 @@
         bindEvents: function() {
             const self = this;
 
-            // Trigger Modal Open
-            $(document).on('click', '.maktub-edit-trigger', function(e) {
+            // Trigger Dashboard (Shortcode)
+            $(document).on('click', '.maktub-dashboard-trigger', function(e) {
                 e.preventDefault();
-                const productId = $(this).data('product-id') || $(this).closest('[data-post-id]').data('post-id');
+                self.openDashboard();
+            });
+
+            // Trigger Edit Modal (from Dashboard or List)
+            $(document).on('click', '.maktub-edit-trigger, .maktub-btn-edit', function(e) {
+                e.preventDefault();
+                const productId = $(this).data('product-id');
                 if (productId) {
-                    self.openModal(productId);
+                    self.openEditModal(productId);
                 }
             });
 
-            // Close Modal
-            $('.maktub-modal-close, .maktub-modal-overlay').on('click', function() {
-                self.closeModal();
-            });
-
-            // Handle ESC key
-            $(document).on('keydown', function(e) {
-                if (e.key === 'Escape') self.closeModal();
+            // Close Modals
+            $(document).on('click', '.maktub-modal-close, .maktub-modal-overlay', function() {
+                $('.maktub-modal').removeClass('is-active').hide();
             });
 
             // Form Submit
@@ -47,9 +52,44 @@
             });
         },
 
-        openModal: function(productId) {
+        openDashboard: function() {
             const self = this;
-            this.$modal.addClass('is-active').show();
+            this.$dashModal.addClass('is-active').show();
+            this.$list.html('<div class="maktub-loader"></div>');
+
+            $.ajax({
+                url: `${maktubData.restUrl}/products`,
+                method: 'GET',
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce);
+                },
+                success: function(response) {
+                    let html = '';
+                    if (response.length === 0) {
+                        html = '<p>Nenhum produto encontrado.</p>';
+                    } else {
+                        response.forEach(item => {
+                            html += `
+                                <div class="maktub-list-item">
+                                    <div class="maktub-item-info">
+                                        <h4>${item.title}</h4>
+                                        <span>Preço: ${item.price || 'N/A'}</span>
+                                    </div>
+                                    <div class="maktub-item-actions">
+                                        <button class="maktub-btn-edit" data-product-id="${item.id}">Editar</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    self.$list.html(html);
+                }
+            });
+        },
+
+        openEditModal: function(productId) {
+            const self = this;
+            this.$editModal.addClass('is-active').show();
             this.$form.hide();
             this.$loader.show();
             this.$productIdInput.val(productId);
@@ -64,27 +104,20 @@
                     self.$loader.hide();
                     self.$form.show();
                     self.$modalTitle.text(response.title);
-                    self.$priceInput.val(response.price);
-                    self.$statusSelect.val(response.status);
-                },
-                error: function() {
-                    alert(maktubData.i18n.error);
-                    self.closeModal();
+                    self.$priceInput.val(response.preco);
+                    self.$statusSelect.val(response.status ? response.status : '0');
+                    self.$descInput.val(response.descricao);
                 }
             });
-        },
-
-        closeModal: function() {
-            this.$modal.removeClass('is-active').hide();
-            this.$form.trigger('reset');
         },
 
         saveData: function() {
             const self = this;
             const productId = this.$productIdInput.val();
             const data = {
-                price: this.$priceInput.val(),
-                status: this.$statusSelect.val()
+                preco: this.$priceInput.val(),
+                status: this.$statusSelect.val(),
+                descricao: this.$descInput.val()
             };
 
             this.$submitBtn.prop('disabled', true).text('Salvando...');
@@ -99,9 +132,10 @@
                 success: function(response) {
                     self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
                     alert(maktubData.i18n.success);
-                    self.closeModal();
-                    // Optional: reload page to see changes
-                    // location.reload();
+                    self.$editModal.removeClass('is-active').hide();
+                    if (self.$dashModal.is(':visible')) {
+                        self.openDashboard(); // Refresh list
+                    }
                 },
                 error: function() {
                     self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);

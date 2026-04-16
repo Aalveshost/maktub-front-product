@@ -56,16 +56,8 @@
                 else { $('.maktub-cat-card').removeClass('is-active'); $(this).addClass('is-active'); self.renderList(slug); }
             });
 
-            $(document).on('click', '.maktub-btn-edit', function(e) {
-                e.preventDefault();
-                const productId = $(this).data('product-id');
-                if (productId) self.openEditModal(productId);
-            });
-
-            $(document).on('click', '.maktub-modal-close', function(e) {
-                e.stopPropagation();
-                $(this).closest('.maktub-modal').removeClass('is-active').hide();
-            });
+            $(document).on('click', '.maktub-btn-edit', function(e) { e.preventDefault(); const productId = $(this).data('product-id'); if (productId) self.openEditModal(productId); });
+            $(document).on('click', '.maktub-modal-close', function(e) { e.stopPropagation(); $(this).closest('.maktub-modal').removeClass('is-active').hide(); });
 
             this.$priceInput.on('input', function() {
                 let v = $(this).val().replace(/\D/g, ''); 
@@ -117,14 +109,14 @@
             this.$grid.show();
             this.$list.hide();
             let gridHtml = '';
-            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'pastel-salgado-adicional'];
+            // Simplified Grid: No standalone Adicionais cards
+            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
             slugsToShow.forEach(slug => {
                 const cat = this.categories.find(c => c.slug === slug);
                 if (cat) {
                     let icon = '🥟';
                     if (slug.includes('doce')) icon = '🍩';
                     if (slug.includes('especial')) icon = '🌟';
-                    if (slug.includes('adicional')) icon = '✨';
                     gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
             });
@@ -166,10 +158,11 @@
             const self = this;
             let html = '';
             
-            // COMPOSITE VIEW v1.3.8 logic
-            if (categorySlug === 'pastel-salgado') {
-                const mainItems = this.allProducts.filter(p => p.cat === 'pastel-salgado').sort((a,b) => a.title.localeCompare(b.title));
-                const extraItems = this.allProducts.filter(p => p.cat === 'pastel-salgado-adicional').sort((a,b) => a.title.localeCompare(b.title));
+            // COMPOSITE VIEW v1.3.9 nested logic
+            if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce') {
+                const mainItems = this.allProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
+                const extraSlug = (categorySlug === 'pastel-salgado') ? 'pastel-salgado-adicional' : 'pastel-doce-adicional';
+                const extraItems = this.allProducts.filter(p => p.cat === extraSlug).sort((a,b) => a.title.localeCompare(b.title));
 
                 mainItems.forEach(item => { html += self.buildItemHtml(item, false); });
                 if (extraItems.length > 0) {
@@ -180,7 +173,6 @@
                 let filtered = [...this.allProducts];
                 if (categorySlug !== 'all') filtered = filtered.filter(p => p.cat === categorySlug);
                 filtered.sort((a, b) => a.title.localeCompare(b.title));
-                
                 if (filtered.length === 0) {
                     html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';
                 } else {

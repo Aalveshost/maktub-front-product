@@ -1,11 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles */
+/* Maktub Front Product Manager Styles v1.2.0 */
 
 :root {
-    --maktub-primary: hsl(24, 74%, 56%);
-    --maktub-primary-hover: hsl(24, 74%, 50%);
-    --maktub-bg-glass: hsl(0, 100%, 99%); /* Ultra Clean White */
+    --maktub-primary: #F05828; /* Laranja conforme inspetor */
+    --maktub-primary-hover: #d1451b;
+    --maktub-bg-glass: hsl(0, 100%, 99%);
     --maktub-border-glass: rgba(0, 0, 0, 0.05);
     --maktub-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
     --maktub-text: #1f2937;
@@ -83,7 +83,6 @@ body {
     color: var(--maktub-text);
 }
 
-/* Close Button Styling */
 .maktub-modal-close {
     background: none;
     border: none;
@@ -105,7 +104,6 @@ body {
     color: var(--maktub-text);
 }
 
-/* Back Link */
 .maktub-back-link {
     background: none;
     border: none;
@@ -120,7 +118,7 @@ body {
     font-family: inherit;
 }
 
-/* Styled Fields Style - Requested design */
+/* Styled Fields v1.2.0 */
 .maktub-field-group {
     position: relative;
     margin-bottom: 2rem;
@@ -131,13 +129,13 @@ body {
 
 .maktub-field-group label {
     position: absolute;
-    top: -10px;
-    left: 12px;
+    top: -11px;
+    left: 15px;
     background: var(--maktub-bg-glass);
-    padding: 0 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--maktub-primary); /* Matching image 3/4 style */
+    padding: 2px 8px;
+    font-size: 0.85rem;
+    font-weight: 700; /* Texto grosso solicitado */
+    color: var(--maktub-primary);
     z-index: 10;
     border-radius: 4px;
 }
@@ -146,9 +144,9 @@ body {
 .maktub-field-group select,
 .maktub-field-group textarea {
     width: 100%;
-    height: 40px;
-    padding: 0 1rem;
-    border-radius: 8px;
+    height: 44px;
+    padding: 0 1.25rem;
+    border-radius: 12px; /* Aumentado para o efeito 'curvado' */
     border: solid 2px #a8a8a8;
     background: transparent;
     font-size: 0.9375rem;
@@ -160,7 +158,7 @@ body {
 
 .maktub-field-group textarea {
     height: auto;
-    padding: 12px;
+    padding: 12px 1.25rem;
 }
 
 .maktub-field-group input:focus,
@@ -169,6 +167,37 @@ body {
     outline: none;
     border-color: var(--maktub-primary);
     background: #fff;
+    box-shadow: 0 0 0 4px rgba(240, 88, 40, 0.05);
+}
+
+/* Button Refinement */
+.maktub-modal-footer {
+    padding: 0.5rem 1.5rem 1.5rem;
+    text-align: left;
+}
+
+/* Enforcing branding with !important to prevent theme overrides */
+.maktub-btn-primary {
+    display: inline-block;
+    width: auto !important;
+    min-width: 180px;
+    padding: 0.875rem 2rem !important;
+    background-color: var(--maktub-primary) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    font-family: var(--maktub-font) !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(240, 88, 40, 0.3) !important;
+}
+
+.maktub-btn-primary:hover {
+    background-color: var(--maktub-primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(240, 88, 40, 0.4) !important;
 }
 
 /* Triggers */
@@ -190,22 +219,14 @@ body {
     color: white;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(226, 125, 59, 0.4);
+    box-shadow: 0 4px 20px rgba(240, 88, 40, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.maktub-trigger-classic {
-    background: #3b82f6;
-}
-
-.maktub-trigger-grid {
-    background: var(--maktub-primary);
-}
-
-/* Category Grid */
+/* Grid & List Styles Unchanged */
 .maktub-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -222,11 +243,6 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.2s;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.maktub-cat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.05);
 }
 
 .maktub-cat-card.is-active {
@@ -255,7 +271,6 @@ body {
     font-weight: 700;
 }
 
-/* List Items */
 .maktub-modal-body {
     flex: 1;
     overflow-y: auto;
@@ -311,20 +326,4 @@ body {
     border: none;
     cursor: pointer;
     font-weight: 700;
-}
-
-.maktub-modal-footer {
-    padding: 0 1.5rem 1.5rem;
-}
-
-.maktub-btn-primary {
-    width: auto; /* Not full width anymore for editor */
-    padding: 0.75rem 2rem;
-    background: var(--maktub-primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
 }

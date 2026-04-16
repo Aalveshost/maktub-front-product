@@ -16,11 +16,11 @@
             this.$editModal = $('#maktub-editor-modal');
             this.$form = $('#maktub-edit-form');
             this.$loader = $('#maktub-loader');
-            this.$list = $('#maktub-dashboard-list');
-            this.$grid = $('#maktub-category-grid');
+            this.$list = $('#maktub-dashboard-list'); // The list container
+            this.$grid = $('#maktub-category-grid'); // The grid container
             this.$btnBack = $('#maktub-btn-back');
             this.$mainTitle = $('#maktub-main-title');
-            this.$modalBody = this.$dashModal.find('.maktub-modal-body');
+            this.$modalBody = this.$dashModal.find('.maktub-modal-body'); // The scrollable parent
             
             this.$priceInput = $('#maktub-price');
             this.$statusToggle = $('#maktub-status-toggle');
@@ -123,7 +123,7 @@
             this.$list.empty();
             this.$grid.empty();
             this.$btnBack.hide();
-            this.$mainTitle.text('Gerenciar Maktub');
+            this.$modalBody.show(); // Always show body
 
             $.ajax({
                 url: `${maktubData.restUrl}/products`,
@@ -140,18 +140,28 @@
         showGridOnly: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Escolha uma Categoria');
-            this.$grid.css('display', 'grid').show(); 
-            this.$modalBody.css('display', 'none').hide(); 
+            
+            this.$grid.show(); // Grid is inside body now
+            this.$list.hide(); // Hide list container
 
             let gridHtml = '';
-            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
+            // Added pastel-salgado-adicional
+            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'pastel-salgado-adicional'];
+            
             slugsToShow.forEach(slug => {
                 const cat = this.categories.find(c => c.slug === slug);
                 if (cat) {
                     let icon = '🥟';
                     if (slug.includes('doce')) icon = '🍩';
                     if (slug.includes('especial')) icon = '🌟';
-                    gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
+                    if (slug.includes('adicional')) icon = '✨';
+
+                    gridHtml += `
+                        <div class="maktub-cat-card" data-slug="${cat.slug}">
+                            <div class="maktub-cat-img">${icon}</div>
+                            <h5>${cat.name}</h5>
+                        </div>
+                    `;
                 }
             });
             this.$grid.html(gridHtml);
@@ -160,8 +170,9 @@
         showClassicView: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Gerenciar Maktub');
-            this.$grid.css('display', 'grid').show(); 
-            this.$modalBody.css('display', 'block').show(); 
+            
+            this.$grid.show(); 
+            this.$list.show(); 
 
             let gridHtml = `<div class="maktub-cat-card" data-slug="all"><div class="maktub-cat-img">🏠</div><h5>Todos</h5></div>`;
             this.categories.forEach(cat => {
@@ -172,6 +183,8 @@
                 if (slug.includes('doce')) icon = '🍩';
                 if (slug.includes('cachorro')) icon = '🌭';
                 if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
+                if (slug.includes('adicional')) icon = '✨';
+
                 const isActive = (slug === 'pastel-salgado') ? 'is-active' : '';
                 gridHtml += `<div class="maktub-cat-card ${isActive}" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
             });
@@ -183,8 +196,10 @@
             const cat = this.categories.find(c => c.slug === slug);
             this.$mainTitle.text(cat ? cat.name : 'Produtos');
             this.$btnBack.show();
-            this.$grid.css('display', 'none').hide(); 
-            this.$modalBody.css('display', 'block').show(); 
+            
+            this.$grid.hide(); // Hide Grid
+            this.$list.show(); // Show List
+            
             this.renderList(slug);
         },
 
@@ -196,7 +211,7 @@
             filtered.sort((a, b) => a.title.localeCompare(b.title));
 
             if (filtered.length === 0) {
-                html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';
+                html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado neste categoria.</p>';
             } else {
                 filtered.forEach(item => {
                     const isInactive = (item.status != '1') ? 'is-inactive' : '';
@@ -255,7 +270,7 @@
                 beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
                 success: function(response) {
                     self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
-                    self.showToast(maktubData.i18n.success); // NO MORE ALERT!
+                    self.showToast(maktubData.i18n.success);
                     self.$editModal.removeClass('is-active').hide();
                     const activeCat = $('.maktub-cat-card.is-active').data('slug') || 'all';
                     self.refreshData(activeCat);

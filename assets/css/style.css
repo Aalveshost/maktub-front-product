@@ -215,35 +215,85 @@
     font-size: 28px;
 }
 
-/* Tabs */
-.maktub-tabs {
-    display: flex;
-    gap: 0.75rem;
-    padding: 0 2rem 1rem;
-    overflow-x: auto;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+/* Search Bar */
+.maktub-search-wrapper {
+    padding: 0 2rem 1.5rem;
 }
 
-.maktub-tab {
-    padding: 0.5rem 1.25rem;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.4);
+.maktub-search-wrapper input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
     border: 1px solid rgba(0, 0, 0, 0.05);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    transition: all 0.3s;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.maktub-tab:hover {
-    background: rgba(255, 255, 255, 0.8);
-}
-
-.maktub-tab.is-active {
-    background: var(--maktub-primary);
-    color: white;
+.maktub-search-wrapper input:focus {
+    outline: none;
     border-color: var(--maktub-primary);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+/* Category Grid */
+.maktub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 0 2rem 1.5rem;
+}
+
+.maktub-cat-card {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.maktub-cat-card:hover {
+    background: #fff;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.maktub-cat-card.is-active {
+    background: var(--maktub-primary);
+    border-color: var(--maktub-primary);
+}
+
+.maktub-cat-card.is-active h5 {
+    color: white;
+}
+
+.maktub-cat-img {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #f3f4f6;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.maktub-cat-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.maktub-cat-card h5 {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--maktub-text);
 }
 
 /* Product List in Modal */
@@ -270,14 +320,26 @@
 }
 
 .maktub-item-info h4 {
-    margin: 0;
-    font-size: 1rem;
+    margin: 0 0 0.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
     color: var(--maktub-text);
 }
 
-.maktub-item-info span {
-    font-size: 0.875rem;
+.maktub-item-info .maktub-category-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
     color: var(--maktub-text-muted);
+}
+
+.maktub-item-price {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #10b981; /* Destaque verde */
 }
 
 .maktub-item-actions .maktub-btn-edit {

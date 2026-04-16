@@ -3,6 +3,7 @@
 
     const MaktubEditor = {
         allProducts: [],
+        categories: [],
         init: function() {
             this.cacheDOM();
             this.bindEvents();
@@ -14,7 +15,8 @@
             this.$form = $('#maktub-edit-form');
             this.$loader = $('#maktub-loader');
             this.$list = $('#maktub-dashboard-list');
-            this.$tabs = $('#maktub-category-tabs');
+            this.$grid = $('#maktub-category-grid');
+            this.$searchInput = $('#maktub-search');
             
             this.$priceInput = $('#maktub-price');
             this.$statusSelect = $('#maktub-status');
@@ -33,11 +35,18 @@
                 self.openDashboard();
             });
 
-            // Handle Tab Clicks
-            $(document).on('click', '.maktub-tab', function() {
-                $('.maktub-tab').removeClass('is-active');
+            // Handle Search
+            this.$searchInput.on('input', function() {
+                const term = $(this).val().toLowerCase();
+                const activeCat = $('.maktub-cat-card.is-active').data('slug');
+                self.renderList(activeCat, term);
+            });
+
+            // Handle Grid Card Clicks
+            $(document).on('click', '.maktub-cat-card', function() {
+                $('.maktub-cat-card').removeClass('is-active');
                 $(this).addClass('is-active');
-                self.renderList($(this).data('slug'));
+                self.renderList($(this).data('slug'), self.$searchInput.val());
             });
 
             // Trigger Edit Modal (from Dashboard or List)
@@ -61,11 +70,18 @@
             });
         },
 
+        formatPrice: function(price) {
+            if (!price) return 'R$ 0,00';
+            const val = parseFloat(price.toString().replace(',', '.'));
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        },
+
         openDashboard: function() {
             const self = this;
             this.$dashModal.addClass('is-active').show();
             this.$list.html('<div class="maktub-loader"></div>');
-            this.$tabs.empty();
+            this.$grid.empty();
+            this.$searchInput.val('');
 
             $.ajax({
                 url: `${maktubData.restUrl}/products`,
@@ -75,13 +91,31 @@
                 },
                 success: function(response) {
                     self.allProducts = response.products;
+                    self.categories = response.categories;
                     
-                    // Render Tabs
-                    let tabsHtml = '<div class="maktub-tab is-active" data-slug="all">Todos</div>';
-                    response.categories.forEach(cat => {
-                        tabsHtml += `<div class="maktub-tab" data-slug="${cat.slug}">${cat.name}</div>`;
+                    // Render Grid Cards
+                    let gridHtml = `
+                        <div class="maktub-cat-card is-active" data-slug="all">
+                            <div class="maktub-cat-img">🏠</div>
+                            <h5>Todos</h5>
+                        </div>
+                    `;
+                    
+                    self.categories.forEach(cat => {
+                        let icon = '📦'; // Fallback icon
+                        if (cat.slug.includes('pastel')) icon = '🥟';
+                        if (cat.slug.includes('bebida') || cat.slug.includes('cerveja')) icon = '🥤';
+                        if (cat.slug.includes('doce')) icon = '🍩';
+                        if (cat.slug.includes('cachorro')) icon = '🌭';
+
+                        gridHtml += `
+                            <div class="maktub-cat-card" data-slug="${cat.slug}">
+                                <div class="maktub-cat-img">${icon}</div>
+                                <h5>${cat.name}</h5>
+                            </div>
+                        `;
                     });
-                    self.$tabs.html(tabsHtml);
+                    self.$grid.html(gridHtml);
 
                     // Render First List
                     self.renderList('all');
@@ -89,23 +123,33 @@
             });
         },
 
-        renderList: function(categorySlug) {
+        renderList: function(categorySlug, searchTerm = '') {
             const self = this;
             let html = '';
             
-            const filtered = categorySlug === 'all' 
-                ? this.allProducts 
-                : this.allProducts.filter(p => p.cat === categorySlug);
+            let filtered = this.allProducts;
+
+            // Filter by Category
+            if (categorySlug !== 'all') {
+                filtered = filtered.filter(p => p.cat === categorySlug);
+            }
+
+            // Filter by Search
+            if (searchTerm) {
+                filtered = filtered.filter(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
+            }
 
             if (filtered.length === 0) {
-                html = '<p style="padding: 2rem; text-align: center;">Nenhum produto nesta categoria.</p>';
+                html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';
             } else {
                 filtered.forEach(item => {
+                    const catName = self.categories.find(c => c.slug === item.cat)?.name || 'Outros';
                     html += `
                         <div class="maktub-list-item">
                             <div class="maktub-item-info">
+                                <div class="maktub-category-label">${catName}</div>
                                 <h4>${item.title}</h4>
-                                <span>Preço: ${item.price || 'N/A'}</span>
+                                <div class="maktub-item-price">${self.formatPrice(item.price)}</div>
                             </div>
                             <div class="maktub-item-actions">
                                 <button class="maktub-btn-edit" data-product-id="${item.id}">Editar</button>
@@ -164,12 +208,31 @@
                     alert(maktubData.i18n.success);
                     self.$editModal.removeClass('is-active').hide();
                     if (self.$dashModal.is(':visible')) {
-                        self.openDashboard(); // Refresh list and keep context
+                        const activeCat = $('.maktub-cat-card.is-active').data('slug');
+                        const currentSearch = self.$searchInput.val();
+                        
+                        // Refresh products data and re-render list
+                        self.refreshAndRender(activeCat, currentSearch);
                     }
                 },
                 error: function() {
                     self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
                     alert(maktubData.i18n.error);
+                }
+            });
+        },
+
+        refreshAndRender: function(activeCat, currentSearch) {
+            const self = this;
+            $.ajax({
+                url: `${maktubData.restUrl}/products`,
+                method: 'GET',
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce);
+                },
+                success: function(response) {
+                    self.allProducts = response.products;
+                    self.renderList(activeCat, currentSearch);
                 }
             });
         }

@@ -1,9 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.6 - SCROLL FIX */
+/* Maktub Front Product Manager Styles v1.3.8 - COMPOSITE VIEW */
 
 :root {
     --maktub-orange: #F05828;
+    --maktub-coral: #FFA07A;
+    --maktub-gold: #FFC107;
     --maktub-bg: #ffffff;
     --maktub-text: #1f2937;
     --maktub-gray: #a8a8a8;
@@ -23,158 +25,63 @@
     box-sizing: border-box !important;
 }
 
-/* Trigger Buttons */
-.maktub-triggers-wrapper {
-    position: fixed !important;
-    bottom: 30px !important;
-    right: 30px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    z-index: 999999 !important;
-}
-
-.maktub-dashboard-trigger {
-    width: 60px !important;
-    height: 60px !important;
-    border-radius: 60px !important;
-    border: none !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
-    color: #fff !important;
-}
-
+/* Modal and Layout */
+.maktub-triggers-wrapper { position: fixed !important; bottom: 30px !important; right: 30px !important; display: flex !important; flex-direction: column !important; gap: 12px !important; z-index: 999999 !important; }
+.maktub-dashboard-trigger { width: 60px !important; height: 60px !important; border-radius: 60px !important; border: none !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; color: #fff !important; }
 .maktub-trigger-classic { background-color: #3b82f6 !important; }
 .maktub-trigger-grid { background-color: var(--maktub-orange) !important; }
 
-/* Modal General Styles */
-.maktub-modal {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 1000000 !important;
-    display: none;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 20px !important;
-}
-
+.maktub-modal { position: fixed !important; inset: 0 !important; z-index: 1000000 !important; display: none; align-items: center !important; justify-content: center !important; padding: 20px !important; }
 .maktub-modal.is-active { display: flex !important; }
+.maktub-modal-overlay { position: absolute !important; inset: 0 !important; background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(2px) !important; }
+.maktub-modal-content { position: relative !important; width: 100% !important; max-width: 500px !important; max-height: 90vh !important; background: #ffffff !important; border-radius: 20px !important; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+.maktub-modal-content.maktub-modal-large { max-width: 600px !important; }
 
-.maktub-modal-overlay {
-    position: absolute !important;
-    inset: 0 !important;
-    background: rgba(0, 0, 0, 0.4) !important;
-    backdrop-filter: blur(2px) !important;
-}
+.maktub-modal-header { display: flex !important; justify-content: space-between !important; align-items: center !important; padding: 1.25rem 1.5rem !important; border-bottom: 1px solid #f1f1f1 !important; background: #fff !important; z-index: 10 !important; }
+.maktub-modal-header h3 { margin: 0 !important; font-size: 1.25rem !important; font-weight: 700 !important; }
 
-.maktub-modal-content {
-    position: relative !important;
-    width: 100% !important;
-    max-width: 500px !important;
-    max-height: 90vh !important;
-    background: #ffffff !important;
-    border-radius: 20px !important;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-}
+#maktub-dashboard-modal .maktub-back-link { background: none !important; border: none !important; color: var(--maktub-orange) !important; font-weight: 700 !important; cursor: pointer !important; display: flex !important; align-items: center !important; gap: 4px !important; padding: 0 !important; }
+#maktub-dashboard-modal .maktub-modal-close, #maktub-editor-modal .maktub-modal-close { background: none !important; border: none !important; font-size: 1.8rem !important; color: #9ca3af !important; cursor: pointer !important; padding: 0 !important; line-height: 1 !important; }
 
-.maktub-modal-content.maktub-modal-large {
-    max-width: 600px !important;
-}
+.maktub-modal-body { flex: 1 !important; overflow-y: auto !important; padding: 0 !important; }
 
-/* Header (Fixed) */
-.maktub-modal-header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 1.25rem 1.5rem !important;
-    border-bottom: 1px solid #f1f1f1 !important;
-    background: #fff !important;
-    z-index: 10 !important;
-}
+/* Grid and List */
+.maktub-grid { display: grid; grid-template-columns: repeat(3, 1fr) !important; gap: 1rem !important; padding: 1.5rem !important; }
+.maktub-list { padding: 1rem 1.5rem !important; }
 
-.maktub-modal-header h3 {
-    margin: 0 !important;
-    font-size: 1.25rem !important;
-    font-weight: 700 !important;
-}
-
-#maktub-dashboard-modal .maktub-back-link {
-    background: none !important;
-    border: none !important;
-    color: var(--maktub-orange) !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    padding: 0 !important;
-}
-
-#maktub-dashboard-modal .maktub-modal-close,
-#maktub-editor-modal .maktub-modal-close {
-    background: none !important;
-    border: none !important;
-    font-size: 1.8rem !important;
-    color: #9ca3af !important;
-    cursor: pointer !important;
-    padding: 0 !important;
-    line-height: 1 !important;
-}
-
-/* SCROLLABLE BODY v1.3.6 */
-.maktub-modal-body {
-    flex: 1 !important;
-    overflow-y: auto !important; /* ENABLE SCROLL */
-    padding: 0 !important; /* Inner containers will have padding */
-}
-
-/* Sub-containers with padding */
-.maktub-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 1rem !important;
-    padding: 1.5rem !important;
-}
-
-.maktub-list {
-    padding: 1rem 1.5rem !important;
-}
-
-/* Category Card */
-.maktub-cat-card {
-    background: #fff !important;
-    border: 1px solid #f3f4f6 !important;
-    border-radius: 15px !important;
-    padding: 1.25rem 0.5rem !important;
-    text-align: center !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
-    cursor: pointer !important;
-}
-
+.maktub-cat-card { background: #fff !important; border: 1px solid #f3f4f6 !important; border-radius: 15px !important; padding: 1.25rem 0.5rem !important; text-align: center !important; box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important; cursor: pointer !important; }
 .maktub-cat-card.is-active { border-color: var(--maktub-orange) !important; box-shadow: 0 0 0 2px var(--maktub-orange) !important; }
-
 .maktub-cat-img { font-size: 2.25rem !important; display: block !important; margin-bottom: 0.5rem !important; }
 .maktub-cat-card h5 { margin: 0 !important; font-weight: 700 !important; font-size: 0.85rem !important; }
 
-/* List Item */
+/* List Item and Sections v1.3.8 */
+.maktub-list-section-title {
+    margin: 1.5rem 0 1rem !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: var(--maktub-gold) !important;
+    border-bottom: 2px solid var(--maktub-gold) !important;
+    display: inline-block !important;
+    padding-bottom: 3px !important;
+}
+
 .maktub-list-item {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
     background: #fff !important;
     border-radius: 12px !important;
-    border-left: 7px solid var(--maktub-orange) !important;
+    border-left: 7px solid var(--maktub-coral) !important; /* Default Coral */
     border-bottom: 1px solid #f1f1f1 !important;
     margin-bottom: 0.75rem !important;
-    padding: 0 1rem !important;
+    padding: 0 1.25rem !important;
     height: 85px !important;
     box-shadow: 0 3px 10px rgba(0,0,0,0.03) !important;
+}
+
+/* Gold border for Adicionais v1.3.8 */
+.maktub-list-item.is-adicional {
+    border-left-color: var(--maktub-gold) !important;
 }
 
 .maktub-list-item.is-inactive {
@@ -182,47 +89,20 @@
     border-left-color: #ef4444 !important;
 }
 
-.maktub-list-item h4 { margin: 0 !important; font-size: 1rem !important; font-weight: 700 !important; color: #000 !important;}
-.maktub-item-price { font-weight: 700 !important; color: var(--maktub-green) !important; }
+.maktub-list-item h4 { margin: 0 !important; font-size: 1.1rem !important; font-weight: 700 !important; color: #000 !important; }
+.maktub-item-price { font-weight: 700 !important; color: var(--maktub-green) !important; font-size: 1rem !important; }
 
-#maktub-dashboard-modal .maktub-btn-edit {
-    background-color: var(--maktub-orange) !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 0.6rem 1.25rem !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-}
+#maktub-dashboard-modal .maktub-btn-edit { background-color: var(--maktub-orange) !important; color: #fff !important; border: none !important; border-radius: 8px !important; padding: 0.6rem 1.5rem !important; font-weight: 700 !important; cursor: pointer !important; }
 
-/* TOAST */
-.maktub-toast {
-    position: fixed !important;
-    top: 30px !important;
-    left: 50% !important;
-    transform: translateX(-50%) translateY(-150%) !important;
-    background: #10b981 !important;
-    color: #fff !important;
-    padding: 12px 24px !important;
-    border-radius: 50px !important;
-    font-weight: 700 !important;
-    z-index: 2000005 !important;
-    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3) !important;
-    transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
-    opacity: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-}
-
+/* Global components kept as 1.3.7 */
+.maktub-toast { position: fixed !important; top: 30px !important; left: 50% !important; transform: translateX(-50%) translateY(-150%) !important; background: #10b981 !important; color: #fff !important; padding: 12px 24px !important; border-radius: 50px !important; font-weight: 700 !important; z-index: 2000005 !important; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3) !important; transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important; opacity: 0 !important; display: flex !important; align-items: center !important; gap: 8px !important; }
 .maktub-toast.is-active { transform: translateX(-50%) translateY(0) !important; opacity: 1 !important; }
 
-/* Editor Form (Blinded) */
 #maktub-edit-form { padding: 1.5rem !important; }
-.maktub-field-group { position: relative !important; margin-bottom: 2rem !important; }
-.maktub-field-group label:not(.maktub-toggle-label) { position: absolute !important; top: -10px !important; left: 14px !important; background: #fff !important; padding: 0 6px !important; font-size: 0.8rem !important; font-weight: 700 !important; color: var(--maktub-orange) !important; z-index: 5 !important; }
-.maktub-field-group input, .maktub-field-group textarea { width: 100% !important; height: 44px !important; border-radius: 12px !important; border: 2px solid var(--maktub-gray) !important; padding: 0 12px !important; font-weight: 600 !important; color: #000 !important; background: #fff !important; font-family: inherit !important; }
-.maktub-field-group textarea { height: auto !important; min-height: 80px !important; padding: 10px !important; }
+.maktub-field-group { position: relative !important; margin-bottom: 2.25rem !important; }
+.maktub-field-group label:not(.maktub-toggle-label) { position: absolute !important; top: -10px !important; left: 14px !important; background: #fff !important; padding: 0 6px !important; font-size: 0.85rem !important; font-weight: 700 !important; color: var(--maktub-orange) !important; z-index: 5 !important; }
+.maktub-field-group input, .maktub-field-group textarea { width: 100% !important; height: 48px !important; border-radius: 12px !important; border: 2px solid var(--maktub-gray) !important; padding: 0 12px !important; font-weight: 600 !important; color: #000 !important; background: #fff !important; font-family: inherit !important; }
+.maktub-field-group textarea { height: auto !important; min-height: 100px !important; padding: 12px !important; }
 
 .maktub-toggle-wrapper { display: flex !important; align-items: center !important; gap: 12px !important; padding: 0.5rem 0 !important; }
 .maktub-toggle-checkbox { display: none !important; }
@@ -236,13 +116,4 @@
 .status-is-ativo { color: #10b981 !important; }
 .status-is-inativo { color: #ef4444 !important; }
 
-#maktub-edit-form .maktub-btn-primary {
-    background-color: var(--maktub-orange) !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 10px !important;
-    padding: 0.85rem 2rem !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    width: 100% !important;
-}
+#maktub-edit-form .maktub-btn-primary { background-color: var(--maktub-orange) !important; color: #fff !important; border: none !important; border-radius: 10px !important; padding: 0.85rem 2rem !important; font-weight: 700 !important; cursor: pointer !important; width: 100% !important; box-shadow: 0 5px 15px rgba(240, 88, 40, 0.3) !important; }

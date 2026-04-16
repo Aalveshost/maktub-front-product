@@ -1,20 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.4 - PREMIUM TOAST */
+/* Maktub Front Product Manager Styles v1.3.5 - BLINDED EDITION */
 
 :root {
     --maktub-orange: #F05828;
+    --maktub-orange-hover: #d1451b;
     --maktub-bg: #ffffff;
     --maktub-text: #1f2937;
     --maktub-gray: #a8a8a8;
-    --maktub-green: #10b981;
+    --maktub-green: #065f46;
     --maktub-font: 'Quicksand', sans-serif;
 }
 
+/* Hard Reset for specificity */
 #maktub-dashboard-modal, 
 #maktub-editor-modal,
 .maktub-triggers-wrapper {
     font-family: var(--maktub-font) !important;
+    box-sizing: border-box !important;
 }
 
 #maktub-dashboard-modal *, 
@@ -23,7 +26,7 @@
     box-sizing: border-box !important;
 }
 
-/* Trigger Buttons */
+/* Trigger Buttons - Bottom Right */
 .maktub-triggers-wrapper {
     position: fixed !important;
     bottom: 30px !important;
@@ -50,7 +53,7 @@
 .maktub-trigger-classic { background-color: #3b82f6 !important; }
 .maktub-trigger-grid { background-color: var(--maktub-orange) !important; }
 
-/* Modal General Styles */
+/* Modal Basics */
 .maktub-modal {
     position: fixed !important;
     inset: 0 !important;
@@ -79,6 +82,12 @@
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
+    padding: 0 !important;
+}
+
+.maktub-modal-content.maktub-modal-large {
+    max-width: 600px !important;
+    height: 85vh !important;
 }
 
 /* Header */
@@ -86,18 +95,74 @@
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 1rem 1.5rem !important;
+    padding: 1.25rem 1.5rem !important;
     border-bottom: 1px solid #f1f1f1 !important;
 }
 
 .maktub-modal-header h3 {
     margin: 0 !important;
-    font-size: 1.25rem !important;
+    font-size: 1.35rem !important;
     font-weight: 700 !important;
     color: var(--maktub-text) !important;
 }
 
-/* List Items */
+#maktub-dashboard-modal .maktub-back-link {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--maktub-orange) !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    font-size: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 0 !important;
+}
+
+/* FIXED PINK BORDER ON CLOSE X */
+#maktub-dashboard-modal .maktub-modal-close,
+#maktub-editor-modal .maktub-modal-close {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 1.8rem !important;
+    color: #9ca3af !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+}
+
+/* GRID VIEW */
+.maktub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.25rem !important;
+    padding: 1.5rem !important;
+}
+
+.maktub-cat-card {
+    background: #fff !important;
+    border: 1px solid #f3f4f6 !important;
+    border-radius: 15px !important;
+    padding: 1.5rem 0.5rem !important;
+    text-align: center !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+    cursor: pointer !important;
+    transition: transform 0.2s !important;
+}
+
+.maktub-cat-card:hover { transform: translateY(-3px) !important; }
+
+.maktub-cat-img { font-size: 2.5rem !important; display: block !important; margin-bottom: 0.5rem !important; }
+.maktub-cat-card h5 { margin: 0 !important; font-weight: 700 !important; font-size: 0.95rem !important; }
+
+/* LIST VIEW */
+.maktub-modal-body {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 1.5rem !important;
+}
+
 .maktub-list-item {
     display: flex !important;
     align-items: center !important;
@@ -106,9 +171,10 @@
     border-radius: 12px !important;
     border-left: 7px solid var(--maktub-orange) !important;
     border-bottom: 1px solid #f1f1f1 !important;
-    margin-bottom: 0.75rem !important;
-    padding: 0 1rem !important;
-    height: 85px !important;
+    margin-bottom: 1rem !important;
+    padding: 0 1.25rem !important;
+    height: 90px !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.04) !important;
 }
 
 .maktub-list-item.is-inactive {
@@ -116,25 +182,51 @@
     border-left-color: #ef4444 !important;
 }
 
-/* Toast Notification v1.3.4 */
+.maktub-list-item h4 {
+    margin: 0 !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #000 !important;
+}
+
+.maktub-item-price {
+    font-weight: 700 !important;
+    color: var(--maktub-green) !important;
+    font-size: 1rem !important;
+}
+
+/* EDIT BUTTON IN LIST (BLINDED) */
+#maktub-dashboard-modal .maktub-btn-edit {
+    background-color: var(--maktub-orange) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 3px 6px rgba(240, 88, 40, 0.2) !important;
+    cursor: pointer !important;
+}
+
+/* Toast Notification (BLINDED) */
 .maktub-toast {
     position: fixed !important;
-    top: 20px !important;
+    top: 30px !important;
     left: 50% !important;
-    transform: translateX(-50%) translateY(-100%) !important;
+    transform: translateX(-50%) translateY(-150%) !important;
     background: #10b981 !important;
     color: #fff !important;
-    padding: 12px 24px !important;
+    padding: 14px 28px !important;
     border-radius: 50px !important;
     font-weight: 700 !important;
-    z-index: 2000000 !important;
-    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3) !important;
-    transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
+    z-index: 2000005 !important;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4) !important;
+    transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
     opacity: 0 !important;
     pointer-events: none !important;
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
+    font-size: 1.05rem !important;
 }
 
 .maktub-toast.is-active {
@@ -142,42 +234,62 @@
     opacity: 1 !important;
 }
 
-.maktub-toast::before {
-    content: '✓' !important;
-    font-size: 1.2rem !important;
+/* EDITOR FORM (BLINDED) */
+.maktub-field-group {
+    position: relative !important;
+    margin-bottom: 2.5rem !important;
 }
 
-/* Other elements kept as v1.3.3 */
-.maktub-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 1rem !important;
-    padding: 1.5rem !important;
-}
-
-.maktub-cat-card {
+.maktub-field-group label:not(.maktub-toggle-label) {
+    position: absolute !important;
+    top: -11px !important;
+    left: 14px !important;
     background: #fff !important;
-    border-radius: 15px !important;
-    padding: 1.25rem 0.5rem !important;
-    text-align: center !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
-    cursor: pointer !important;
+    padding: 0 8px !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: var(--maktub-orange) !important;
+    z-index: 5 !important;
 }
 
-.maktub-toggle-wrapper { display: flex !important; align-items: center !important; gap: 12px !important; padding: 1rem 0 !important; }
+.maktub-field-group input, 
+.maktub-field-group textarea {
+    width: 100% !important;
+    height: 48px !important;
+    border-radius: 10px !important;
+    border: 2px solid var(--maktub-gray) !important;
+    padding: 0 15px !important;
+    font-weight: 600 !important;
+    color: #000 !important;
+    font-family: inherit !important;
+    background: #fff !important;
+}
+
+.maktub-field-group textarea { height: auto !important; min-height: 100px !important; padding: 15px !important; }
+
+/* RE-BLINDING THE TOGGLE */
+.maktub-toggle-wrapper { display: flex !important; align-items: center !important; gap: 14px !important; padding: 0.5rem 0 !important; }
 .maktub-toggle-checkbox { display: none !important; }
-.maktub-toggle-label { width: 44px !important; height: 22px !important; background: #ccc !important; border-radius: 15px !important; cursor: pointer !important; position: relative !important; }
-.maktub-toggle-label::after { content: '' !important; position: absolute !important; top: 2px !important; left: 2px !important; width: 18px !important; height: 18px !important; background: #fff !important; border-radius: 50% !important; transition: 0.3s !important; }
+.maktub-toggle-label { width: 50px !important; height: 26px !important; background: #ccc !important; border-radius: 20px !important; cursor: pointer !important; position: relative !important; border: none !important; }
+.maktub-toggle-label::after { content: '' !important; position: absolute !important; top: 3px !important; left: 3px !important; width: 20px !important; height: 20px !important; background: #fff !important; border-radius: 50% !important; transition: 0.3s !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important; }
 .maktub-toggle-checkbox:checked + .maktub-toggle-label { background-color: #10b981 !important; }
 .maktub-toggle-checkbox:not(:checked) + .maktub-toggle-label { background-color: #ef4444 !important; }
-.maktub-toggle-checkbox:checked + .maktub-toggle-label::after { left: 24px !important; }
+.maktub-toggle-checkbox:checked + .maktub-toggle-label::after { left: 27px !important; }
 
+#maktub-status-text { font-weight: 700 !important; font-size: 1.1rem !important; }
+.status-is-ativo { color: #10b981 !important; }
+.status-is-inativo { color: #ef4444 !important; }
+
+/* SAVE BUTTON (BLINDED) */
 #maktub-edit-form .maktub-btn-primary {
     background-color: var(--maktub-orange) !important;
     color: #fff !important;
     border: none !important;
-    border-radius: 10px !important;
-    padding: 0.85rem 2rem !important;
+    border-radius: 12px !important;
+    padding: 1rem 2.5rem !important;
     font-weight: 700 !important;
+    font-size: 1.1rem !important;
     cursor: pointer !important;
+    width: 100% !important;
+    box-shadow: 0 5px 15px rgba(240, 88, 40, 0.3) !important;
 }

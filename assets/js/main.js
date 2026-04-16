@@ -19,7 +19,7 @@
             this.$grid = $('#maktub-category-grid');
             this.$btnBack = $('#maktub-btn-back');
             this.$mainTitle = $('#maktub-main-title');
-            this.$modalBody = $('.maktub-modal-body');
+            this.$modalBody = this.$dashModal.find('.maktub-modal-body');
             
             this.$priceInput = $('#maktub-price');
             this.$statusToggle = $('#maktub-status-toggle');
@@ -27,7 +27,7 @@
             this.$descInput = $('#maktub-desc');
             this.$productIdInput = $('#maktub-product-id');
             this.$modalTitle = $('#maktub-modal-title');
-            this.$submitBtn = this.$form.find('button[type="submit"]');
+            this.$submitBtn = this.$form.find('.maktub-btn-primary');
         },
 
         bindEvents: function() {
@@ -66,7 +66,7 @@
             });
 
             // Trigger Edit Modal
-            $(document).on('click', '.maktub-edit-trigger, .maktub-btn-edit', function(e) {
+            $(document).on('click', '.maktub-btn-edit', function(e) {
                 e.preventDefault();
                 const productId = $(this).data('product-id');
                 if (productId) {
@@ -74,7 +74,7 @@
                 }
             });
 
-            // Close CURRENT active Modal
+            // Close CURRENT active Modal (Only the one being clicked)
             $(document).on('click', '.maktub-modal-close', function(e) {
                 e.stopPropagation();
                 $(this).closest('.maktub-modal').removeClass('is-active').hide();
@@ -145,8 +145,8 @@
         showGridOnly: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Escolha uma Categoria');
-            this.$grid.show();
-            this.$modalBody.hide(); // List container hidden
+            this.$grid.show(); // Show grid
+            this.$modalBody.hide(); // STACK FIX: Hide list body entirely
 
             let gridHtml = '';
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial'];
@@ -172,8 +172,8 @@
         showClassicView: function() {
             this.$btnBack.hide();
             this.$mainTitle.text('Gerenciar Maktub');
-            this.$grid.show(); // Horizontal categories
-            this.$modalBody.show(); // Product list
+            this.$grid.show(); 
+            this.$modalBody.show(); 
 
             let gridHtml = `
                 <div class="maktub-cat-card" data-slug="all">
@@ -209,8 +209,8 @@
             const cat = this.categories.find(c => c.slug === slug);
             this.$mainTitle.text(cat ? cat.name : 'Produtos');
             this.$btnBack.show();
-            this.$grid.hide(); // Hide category grid
-            this.$modalBody.show(); // Show product list container
+            this.$grid.hide(); // STACK FIX: Hide grid entirely
+            this.$modalBody.show(); // Show list container
             
             this.renderList(slug);
         },
@@ -230,13 +230,11 @@
                 html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>';
             } else {
                 filtered.forEach(item => {
-                    const catName = self.categories.find(c => c.slug === item.cat)?.name || 'Outros';
                     const isInactive = (item.status === 0 || item.status === '0') ? 'is-inactive' : '';
                     
                     html += `
                         <div class="maktub-list-item ${isInactive}">
                             <div class="maktub-item-info">
-                                <div class="maktub-category-label">${catName}</div>
                                 <h4>${item.title}</h4>
                                 <div class="maktub-item-price">${self.formatPrice(item.price)}</div>
                             </div>

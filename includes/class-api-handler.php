@@ -38,7 +38,7 @@ class Maktub_API_Handler {
 	}
 
 	/**
-	 * Get all products of 'maktub' post type.
+	 * Get all products and categories.
 	 */
 	public function get_products() {
 		$posts = get_posts( array(
@@ -47,18 +47,37 @@ class Maktub_API_Handler {
 			'posts_per_page' => -1,
 		) );
 
-		$price_field = 'preco';
-		$data = array();
+		$categories = get_terms( array(
+			'taxonomy'   => 'maktub-categorias',
+			'hide_empty' => false,
+		) );
 
-		foreach ( $posts as $post ) {
-			$data[] = array(
-				'id'    => $post->ID,
-				'title' => $post->post_title,
-				'price' => get_post_meta( $post->ID, $price_field, true ),
+		$cat_data = array();
+		foreach ( $categories as $cat ) {
+			$cat_data[] = array(
+				'id'   => $cat->term_id,
+				'name' => $cat->name,
+				'slug' => $cat->slug,
 			);
 		}
 
-		return rest_ensure_response( $data );
+		$price_field = 'preco';
+		$prod_data = array();
+
+		foreach ( $posts as $post ) {
+			$terms = wp_get_post_terms( $post->ID, 'maktub-categorias' );
+			$prod_data[] = array(
+				'id'    => $post->ID,
+				'title' => $post->post_title,
+				'price' => get_post_meta( $post->ID, $price_field, true ),
+				'cat'   => ! empty( $terms ) ? $terms[0]->slug : 'uncategorized',
+			);
+		}
+
+		return rest_ensure_response( array(
+			'products'   => $prod_data,
+			'categories' => $cat_data,
+		) );
 	}
 
 	public function get_product_data( $request ) {

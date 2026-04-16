@@ -2,6 +2,7 @@
     'use strict';
 
     const MaktubEditor = {
+        allProducts: [],
         init: function() {
             this.cacheDOM();
             this.bindEvents();
@@ -13,6 +14,7 @@
             this.$form = $('#maktub-edit-form');
             this.$loader = $('#maktub-loader');
             this.$list = $('#maktub-dashboard-list');
+            this.$tabs = $('#maktub-category-tabs');
             
             this.$priceInput = $('#maktub-price');
             this.$statusSelect = $('#maktub-status');
@@ -29,6 +31,13 @@
             $(document).on('click', '.maktub-dashboard-trigger', function(e) {
                 e.preventDefault();
                 self.openDashboard();
+            });
+
+            // Handle Tab Clicks
+            $(document).on('click', '.maktub-tab', function() {
+                $('.maktub-tab').removeClass('is-active');
+                $(this).addClass('is-active');
+                self.renderList($(this).data('slug'));
             });
 
             // Trigger Edit Modal (from Dashboard or List)
@@ -56,6 +65,7 @@
             const self = this;
             this.$dashModal.addClass('is-active').show();
             this.$list.html('<div class="maktub-loader"></div>');
+            this.$tabs.empty();
 
             $.ajax({
                 url: `${maktubData.restUrl}/products`,
@@ -64,27 +74,47 @@
                     xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce);
                 },
                 success: function(response) {
-                    let html = '';
-                    if (response.length === 0) {
-                        html = '<p>Nenhum produto encontrado.</p>';
-                    } else {
-                        response.forEach(item => {
-                            html += `
-                                <div class="maktub-list-item">
-                                    <div class="maktub-item-info">
-                                        <h4>${item.title}</h4>
-                                        <span>Preço: ${item.price || 'N/A'}</span>
-                                    </div>
-                                    <div class="maktub-item-actions">
-                                        <button class="maktub-btn-edit" data-product-id="${item.id}">Editar</button>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    }
-                    self.$list.html(html);
+                    self.allProducts = response.products;
+                    
+                    // Render Tabs
+                    let tabsHtml = '<div class="maktub-tab is-active" data-slug="all">Todos</div>';
+                    response.categories.forEach(cat => {
+                        tabsHtml += `<div class="maktub-tab" data-slug="${cat.slug}">${cat.name}</div>`;
+                    });
+                    self.$tabs.html(tabsHtml);
+
+                    // Render First List
+                    self.renderList('all');
                 }
             });
+        },
+
+        renderList: function(categorySlug) {
+            const self = this;
+            let html = '';
+            
+            const filtered = categorySlug === 'all' 
+                ? this.allProducts 
+                : this.allProducts.filter(p => p.cat === categorySlug);
+
+            if (filtered.length === 0) {
+                html = '<p style="padding: 2rem; text-align: center;">Nenhum produto nesta categoria.</p>';
+            } else {
+                filtered.forEach(item => {
+                    html += `
+                        <div class="maktub-list-item">
+                            <div class="maktub-item-info">
+                                <h4>${item.title}</h4>
+                                <span>Preço: ${item.price || 'N/A'}</span>
+                            </div>
+                            <div class="maktub-item-actions">
+                                <button class="maktub-btn-edit" data-product-id="${item.id}">Editar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            this.$list.html(html);
         },
 
         openEditModal: function(productId) {
@@ -134,7 +164,7 @@
                     alert(maktubData.i18n.success);
                     self.$editModal.removeClass('is-active').hide();
                     if (self.$dashModal.is(':visible')) {
-                        self.openDashboard(); // Refresh list
+                        self.openDashboard(); // Refresh list and keep context
                     }
                 },
                 error: function() {

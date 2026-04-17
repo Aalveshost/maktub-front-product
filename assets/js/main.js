@@ -7,6 +7,7 @@
         currentMode: 'classic', 
         isBatchMode: false,
         currentBatchCategory: null,
+        currentCategory: 'all',
 
         init: function() {
             this.cacheDOM();
@@ -128,6 +129,7 @@
             this.$mainTitle.text('Escolha uma Categoria');
             this.$grid.show();
             this.$list.hide();
+            this.currentCategory = 'grid';
             let gridHtml = '';
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas'];
             slugsToShow.forEach(slug => {
@@ -177,9 +179,10 @@
 
         renderList: function(categorySlug) {
             const self = this;
+            this.currentCategory = categorySlug;
             let html = '';
             
-            // GLOBAL MINI FILTER v1.3.24
+            // GLOBAL MINI FILTER v1.3.26
             const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
 
             if (categorySlug === 'bebidas') {
@@ -197,7 +200,6 @@
                     }
                 });
             } else if (categorySlug === 'porcoes') {
-                // MASTER ITEM REDESIGN v1.3.24
                 const pasteisItems = filteredProducts.filter(p => p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
                 const generalItems = filteredProducts.filter(p => p.cat === 'porcoes').sort((a,b) => a.title.localeCompare(b.title));
                 
@@ -232,7 +234,7 @@
         },
 
         buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null, batchCategory = null) {
-            const statusClass = (item.status != '1') ? 'is-inactive' : ''; // RED IF NOT '1'
+            const statusClass = (item.status != '1') ? 'is-inactive' : ''; 
             const cat = item.cat || '';
             let borderClass = forceBorder || '';
             const dataBatch = batchCategory ? `data-batch-category="${batchCategory}"` : '';
@@ -299,7 +301,6 @@
             this.$submitBtn.prop('disabled', true).text('Salvando...');
 
             if (this.isBatchMode) {
-                // SEQUENTIAL BATCH (SAFE) v1.3.24
                 const targets = this.allProducts.filter(p => p.cat === this.currentBatchCategory && !p.title.toLowerCase().includes('mini'));
                 let count = 0;
                 
@@ -308,7 +309,7 @@
                         self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
                         self.showToast(`Atualizado: ${count} itens em lote!`);
                         self.$editModal.removeClass('is-active').hide();
-                        self.refreshData($('.maktub-cat-card.is-active').data('slug') || 'all');
+                        self.refreshData(self.currentCategory);
                         return;
                     }
 
@@ -323,7 +324,6 @@
                 };
                 updateNext();
             } else {
-                // SINGLE
                 $.ajax({
                     url: `${maktubData.restUrl}/product/${productId}`,
                     method: 'POST',
@@ -333,7 +333,7 @@
                         self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
                         self.showToast(maktubData.i18n.success);
                         self.$editModal.removeClass('is-active').hide();
-                        self.refreshData($('.maktub-cat-card.is-active').data('slug') || 'all');
+                        self.refreshData(self.currentCategory);
                     },
                     error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast(maktubData.i18n.error, 'error'); }
                 });

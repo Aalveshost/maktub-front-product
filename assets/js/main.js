@@ -50,12 +50,8 @@
             $(document).on('click', '.maktub-trigger-grid', function(e) { e.preventDefault(); self.currentMode = 'grid'; self.openDashboard(); });
             
             this.$btnBack.on('click', function(e) { 
-                // NEW VOLTAR LOGIC v1.3.10
-                if (self.$grid.is(':visible')) {
-                    self.$dashModal.removeClass('is-active').hide();
-                } else {
-                    self.showGridOnly(); 
-                }
+                if (self.$grid.is(':visible')) { self.$dashModal.removeClass('is-active').hide(); } 
+                else { self.showGridOnly(); }
             });
 
             $(document).on('click', '.maktub-cat-card', function() {
@@ -95,9 +91,6 @@
         openDashboard: function() {
             const self = this;
             this.$dashModal.addClass('is-active').show();
-            this.$list.empty();
-            this.$grid.empty();
-            this.$btnBack.show(); // Always show back btn now in orange mode
             this.$modalBody.show();
             $.ajax({
                 url: `${maktubData.restUrl}/products`,
@@ -112,25 +105,28 @@
         },
 
         showGridOnly: function() {
-            this.$btnBack.show(); // For closing
+            this.$btnBack.show();
             this.$mainTitle.text('Escolha uma Categoria');
             this.$grid.show();
             this.$list.hide();
             
             let gridHtml = '';
-            // EXPANDED SLUGS v1.3.10
-            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'agua', 'cervejas'];
+            // Consolidated Bebidas v1.3.11
+            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas'];
             
             slugsToShow.forEach(slug => {
-                const cat = this.categories.find(c => c.slug === slug);
-                if (cat) {
+                // If it's the virtual 'bebidas', we find the first available drink category to represent it effectively
+                const cat = (slug === 'bebidas') 
+                    ? { name: 'Bebidas', slug: 'bebidas' } 
+                    : this.categories.find(c => c.slug === slug);
+
+                if (cat || slug === 'bebidas') {
                     let icon = '🥟';
                     if (slug.includes('doce')) icon = '🍩';
                     if (slug.includes('especial')) icon = '🌟';
                     if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
                     if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
-                    if (slug.includes('agua')) icon = '💧';
-                    if (slug.includes('cerveja')) icon = '🍺';
+                    if (slug === 'bebidas') icon = '🥤';
 
                     gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
@@ -161,8 +157,7 @@
         },
 
         showListForCategory: function(slug) {
-            const cat = this.categories.find(c => c.slug === slug);
-            this.$mainTitle.text(cat ? cat.name : 'Produtos');
+            this.$mainTitle.text(slug === 'bebidas' ? 'Bebidas' : (this.categories.find(c => c.slug === slug)?.name || 'Produtos'));
             this.$btnBack.show();
             this.$grid.hide();
             this.$list.show();
@@ -173,50 +168,51 @@
             const self = this;
             let html = '';
             
-            // COMPOSITE VIEW v1.3.10 extended logic
-            const compositeMap = {
-                'pastel-salgado': 'pastel-salgado-adicional',
-                'pastel-doce': 'pastel-doce-adicional',
-                'cachorro-quente': 'cachorro-quente-acrescimo'
-            };
+            // COMPOSITE GROUPS v1.3.11
+            const beverageSlugs = ['cervejas', 'agua', 'del-valle-290ml', 'refri-lata-350ml', 'refri-500ml', 'refri-600ml', 'refri-2l', 'sucos-naturais', 'sucos-polpa-preco'];
 
-            if (compositeMap[categorySlug]) {
+            if (categorySlug === 'bebidas') {
+                beverageSlugs.forEach(slug => {
+                    const catProducts = this.allProducts.filter(p => p.cat === slug).sort((a,b) => a.title.localeCompare(b.title));
+                    catProducts.forEach(item => { html += self.buildItemHtml(item); });
+                });
+            } else if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce' || categorySlug === 'cachorro-quente') {
+                const compositeMap = { 'pastel-salgado': 'pastel-salgado-adicional', 'pastel-doce': 'pastel-doce-adicional', 'cachorro-quente': 'cachorro-quente-acrescimo' };
                 const mainItems = this.allProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
-                const extraSlug = compositeMap[categorySlug];
-                const extraItems = this.allProducts.filter(p => p.cat === extraSlug).sort((a,b) => a.title.localeCompare(b.title));
+                const extraItems = this.allProducts.filter(p => p.cat === compositeMap[categorySlug]).sort((a,b) => a.title.localeCompare(b.title));
 
-                mainItems.forEach(item => { html += self.buildItemHtml(item, false); });
+                mainItems.forEach(item => { html += self.buildItemHtml(item); });
                 if (extraItems.length > 0) {
                     html += '<h3 class="maktub-list-section-title">Adicionais</h3>';
                     extraItems.forEach(item => { html += self.buildItemHtml(item, true); });
                 }
             } else {
-                let filtered = [...this.allProducts];
-                if (categorySlug !== 'all') filtered = filtered.filter(p => p.cat === categorySlug);
-                filtered.sort((a, b) => a.title.localeCompare(b.title));
-                if (filtered.length === 0) {
-                    html = '<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado neste categoria.</p>';
-                } else {
-                    filtered.forEach(item => {
-                        const isAdicional = item.cat.includes('adicional') || item.cat.includes('acrescimo');
-                        html += self.buildItemHtml(item, isAdicional);
-                    });
-                }
+                let filtered = this.allProducts.filter(p => p.cat === categorySlug).sort((a, b) => a.title.localeCompare(b.title));
+                if (filtered.length === 0 && categorySlug === 'all') filtered = [...this.allProducts];
+                
+                if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } 
+                else { filtered.forEach(item => { html += self.buildItemHtml(item); }); }
             }
             this.$list.html(html);
         },
 
-        buildItemHtml: function(item, isAdicional) {
+        buildItemHtml: function(item, forceAdicionalClass = false) {
             const statusClass = (item.status != '1') ? 'is-inactive' : '';
-            
-            // Map borders v1.3.10
-            let borderClass = '';
             const cat = item.cat;
-            if (isAdicional) borderClass = 'border-gold';
-            else if (cat === 'cachorro-quente') borderClass = 'border-hotdog';
-            else if (cat === 'porcoes') borderClass = 'border-porcoes';
-            else if (cat === 'agua') borderClass = 'border-water';
-            else if (cat === 'cervejas') borderClass = 'border-beer';
+            let borderClass = '';
+
+            // Border mapping v1.3.11
+            if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
+            else if (cat === 'cachorro-quente') borderClass = 'b-hotdog';
+            else if (cat === 'porcoes') borderClass = 'b-bege';
+            else if (cat === 'cervejas') borderClass = 'b-beer';
+            else if (cat === 'agua') borderClass = 'b-water';
+            else if (cat === 'del-valle-290ml' || cat === 'refri-600ml') borderClass = 'b-peach';
+            else if (cat === 'refri-lata-350ml') borderClass = 'b-refri-lata';
+            else if (cat === 'refri-500ml') borderClass = 'b-refri-50';
+            else if (cat === 'refri-2l') borderClass = 'b-refri-2l';
+            else if (cat === 'sucos-naturais') borderClass = 'b-mango';
+            else if (cat === 'sucos-polpa-preco') borderClass = 'b-forest';
 
             return `
                 <div class="maktub-list-item ${statusClass} ${borderClass}">

@@ -161,7 +161,7 @@
             let html = '';
             const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
 
-            // COMPOSITE GROUPS v1.3.14
+            // COMPOSITE GROUPS logic
             if (categorySlug === 'bebidas') {
                 const beverageMap = [
                     { slug: 'cervejas', name: 'Cervejas' }, { slug: 'agua', name: 'Água' },
@@ -177,12 +177,19 @@
                     }
                 });
             } else if (categorySlug === 'porcoes') {
-                // NESTED PORCOES v1.3.14: Pasteis on top
+                // NESTED PORCOES v1.3.15 WITH TITLES
                 const pasteisItems = filteredProducts.filter(p => p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
                 const generalItems = filteredProducts.filter(p => p.cat === 'porcoes').sort((a,b) => a.title.localeCompare(b.title));
                 
-                pasteisItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
-                generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                if (pasteisItems.length > 0) {
+                    html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
+                    pasteisItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                }
+                
+                if (generalItems.length > 0) {
+                    html += '<h3 class="maktub-list-section-title">Porções</h3>';
+                    generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                }
                 
                 if (html === '') html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>';
 

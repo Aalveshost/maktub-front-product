@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.57 - RECOVERY & SORVETES INTEGRATION */
+/* Maktub Front Product Manager Styles v1.3.60 - CREATE & EDIT NAMES */
 
 :root {
     --maktub-orange: #F05828;
@@ -8,9 +8,9 @@
     --maktub-gold: #FFC107;
     --maktub-hotdog: #B83300;
     --maktub-bege: #EBDBBC;
-    --maktub-sorvete: #D64A00; /* INTEGRATED SORVETES */
+    --maktub-sorvete: #D64A00;
     
-    /* BEVERAGES COLORS - RESTORED */
+    /* BEVERAGES COLORS */
     --maktub-beer-gold: #D4A017;
     --maktub-water-blue: #5AB3F0;
     --maktub-peach: #FFB47B;
@@ -46,6 +46,11 @@
 .maktub-triggers-wrapper { display: inline-flex !important; flex-direction: column !important; gap: 12px !important; margin: 10px 0 !important; }
 .maktub-dashboard-trigger { width: 60px !important; height: 60px !important; border-radius: 60px !important; border: none !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; color: #fff !important; }
 .maktub-trigger-grid { background-color: var(--maktub-orange) !important; }
+
+/* Dashboard Header Actions */
+.maktub-header-actions { display: flex !important; align-items: center !important; gap: 15px !important; }
+.maktub-btn-plus { background-color: var(--maktub-green) !important; color: #fff !important; border: none !important; border-radius: 8px !important; padding: 8px 15px !important; font-size: 13px !important; font-weight: 800 !important; cursor: pointer !important; transition: transform 0.2s !important; }
+.maktub-btn-plus:active { transform: scale(0.95); }
 
 .maktub-modal { position: fixed !important; inset: 0 !important; z-index: 1000000 !important; display: none; align-items: center !important; justify-content: center !important; padding: 20px !important; }
 .maktub-modal.is-active { display: flex !important; }
@@ -98,10 +103,6 @@
     color: #fff !important;
 }
 
-/* Modal Buttons */
-.maktub-btn-success { background: var(--maktub-green) !important; }
-.maktub-btn-danger { background: var(--maktub-red) !important; }
-
 /* Grid and List */
 .maktub-grid { display: grid; grid-template-columns: repeat(3, 1fr) !important; gap: 1rem !important; padding: 1.5rem !important; }
 .maktub-list { padding: 1rem 1.5rem !important; }
@@ -132,11 +133,10 @@
 
 .maktub-list-item.is-inactive { background-color: rgba(239, 68, 68, 0.15) !important; border-left-color: var(--maktub-red) !important; }
 
-/* DYNAMIC BORDERS classes - RESTORED ALL */
 .b-gold { border-left-color: var(--maktub-gold) !important; }
 .b-hotdog { border-left-color: var(--maktub-hotdog) !important; }
 .b-bege { border-left-color: var(--maktub-bege) !important; }
-.b-sorvete { border-left-color: var(--maktub-sorvete) !important; } /* INTEGRATED */
+.b-sorvete { border-left-color: var(--maktub-sorvete) !important; }
 .b-beer { border-left-color: var(--maktub-beer-gold) !important; }
 .b-water { border-left-color: var(--maktub-water-blue) !important; }
 .b-peach { border-left-color: var(--maktub-peach) !important; }
@@ -157,7 +157,7 @@
 #maktub-edit-form { padding: 1.5rem !important; }
 .maktub-field-group { position: relative !important; margin-bottom: 2.5rem !important; }
 .maktub-field-group label:not(.maktub-toggle-label) { position: absolute !important; top: -11px !important; left: 14px !important; background: #fff !important; padding: 0 8px !important; font-size: 0.85rem !important; font-weight: 700 !important; color: var(--maktub-orange) !important; z-index: 5 !important; }
-.maktub-field-group input, .maktub-field-group textarea { width: 100% !important; height: 50px !important; border-radius: 12px !important; border: 2px solid var(--maktub-gray) !important; padding: 0 15px !important; font-weight: 600 !important; color: #000 !important; background: #fff !important; }
+.maktub-field-group input, .maktub-field-group textarea, .maktub-field-group select { width: 100% !important; height: 50px !important; border-radius: 12px !important; border: 2px solid var(--maktub-gray) !important; padding: 0 15px !important; font-weight: 600 !important; color: #000 !important; background: #fff !important; font-family: inherit !important; appearance: none !important; }
 .maktub-field-group textarea { height: auto !important; min-height: 100px !important; padding: 15px !important; }
 .maktub-toggle-wrapper { display: flex !important; align-items: center !important; gap: 14px !important; padding: 0.5rem 0 !important; }
 .maktub-toggle-checkbox { display: none !important; }

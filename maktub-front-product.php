@@ -3,7 +3,7 @@
  * Plugin Name: Maktub Front Product Manager
  * Plugin URI: https://github.com/Aalveshost/maktub-front-product
  * Description: Interface premium para edição de produtos (Preço e Status) no frontend. Integrado com Jet Engine e WooCommerce.
- * Version: 1.3.57
+ * Version: 1.3.60
  * Author: Alef Alves
  * Author URI: https://aalves.dev
  * Text Domain: maktub-front
@@ -32,7 +32,7 @@ final class Maktub_Front_Product {
 	}
 
 	private function define_constants() {
-		define( 'MAKTUB_FRONT_VERSION', '1.3.57' );
+		define( 'MAKTUB_FRONT_VERSION', '1.3.60' );
 		define( 'MAKTUB_FRONT_PATH', plugin_dir_path( __FILE__ ) );
 		define( 'MAKTUB_FRONT_URL', plugin_dir_url( __FILE__ ) );
 	}
@@ -96,7 +96,10 @@ final class Maktub_Front_Product {
 				<div class="maktub-modal-header">
 					<button id="maktub-btn-back" class="maktub-back-link" style="display:none;">&larr; Voltar</button>
 					<h3 id="maktub-main-title">Gerenciar Maktub</h3>
-					<button class="maktub-modal-close">&times;</button>
+					<div class="maktub-header-actions">
+						<button id="maktub-btn-new" class="maktub-btn-plus" title="Novo Item">+ NOVO</button>
+						<button class="maktub-modal-close">&times;</button>
+					</div>
 				</div>
 				
 				<div class="maktub-modal-body">
@@ -123,6 +126,16 @@ final class Maktub_Front_Product {
 					<form id="maktub-edit-form">
 						<input type="hidden" id="maktub-product-id" name="product_id">
 						
+						<div class="maktub-field-group">
+							<label for="maktub-title">Nome do Produto</label>
+							<input type="text" id="maktub-title" name="post_title" placeholder="Ex: Pastel de Vento">
+						</div>
+
+						<div class="maktub-field-group" id="maktub-cat-field-wrapper">
+							<label for="maktub-category-select">Categoria</label>
+							<select id="maktub-category-select" name="category"></select>
+						</div>
+
 						<div class="maktub-field-group">
 							<label for="maktub-price">Preço</label>
 							<input type="text" id="maktub-price" name="preco" placeholder="0,00" inputmode="decimal">

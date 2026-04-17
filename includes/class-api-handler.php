@@ -26,6 +26,12 @@ class Maktub_API_Handler {
             'permission_callback' => '__return_true',
         ]);
 
+        register_rest_route( 'maktub/v2', '/product', [
+            'methods' => 'POST',
+            'callback' => [ $this, 'create_product' ],
+            'permission_callback' => '__return_true',
+        ]);
+
         // INVENTORY BULK ROUTES v1.3.46
         register_rest_route( 'maktub/v2', '/inventory', [
             'methods' => 'GET',
@@ -151,6 +157,18 @@ class Maktub_API_Handler {
             }
         }
 
+        if ( isset( $params['post_title'] ) ) {
+            $update_post = [
+                'ID' => $id,
+                'post_title' => sanitize_text_field( $params['post_title'] ),
+            ];
+            wp_update_post( $update_post );
+        }
+
+        if ( isset( $params['category'] ) ) {
+            wp_set_object_terms( $id, $params['category'], 'maktub-categorias' );
+        }
+
         if ( isset( $params['descricao'] ) ) {
             update_post_meta( $id, 'descricao', sanitize_textarea_field( $params['descricao'] ) );
         }
@@ -158,6 +176,45 @@ class Maktub_API_Handler {
         clean_post_cache( $id );
         
         return [ 'success' => true ];
+    }
+
+    public function create_product( $request ) {
+        $params = $request->get_params();
+        
+        $new_post = [
+            'post_title'   => sanitize_text_field( $params['post_title'] ),
+            'post_content' => '',
+            'post_status'  => 'publish',
+            'post_type'    => 'maktub'
+        ];
+
+        $id = wp_insert_post( $new_post );
+
+        if ( is_wp_error( $id ) ) return [ 'success' => false, 'error' => $id->get_error_message() ];
+
+        if ( !empty( $params['category'] ) ) {
+            wp_set_object_terms( $id, $params['category'], 'maktub-categorias' );
+        }
+
+        if ( isset( $params['preco'] ) ) {
+            $price = sanitize_text_field( $params['preco'] );
+            update_post_meta( $id, 'preco', $price );
+            update_post_meta( $id, '_price', $price );
+        }
+
+        if ( isset( $params['status'] ) ) {
+            if ( $params['status'] === 'Disponível' ) {
+                update_post_meta( $id, 'status', ['disponivel'] );
+            } else {
+                update_post_meta( $id, 'status', [] );
+            }
+        }
+
+        if ( isset( $params['descricao'] ) ) {
+            update_post_meta( $id, 'descricao', sanitize_textarea_field( $params['descricao'] ) );
+        }
+
+        return [ 'success' => true, 'id' => $id ];
     }
 
     // INVENTORY LOGIC v1.3.50

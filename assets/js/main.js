@@ -26,9 +26,12 @@
             this.$list = $('#maktub-dashboard-list');
             this.$grid = $('#maktub-category-grid');
             this.$btnBack = $('#maktub-btn-back');
+            this.$btnNew = $('#maktub-btn-new');
             this.$mainTitle = $('#maktub-main-title');
             this.$modalBody = this.$dashModal.find('.maktub-modal-body');
             
+            this.$titleInput = $('#maktub-title');
+            this.$catSelect = $('#maktub-category-select');
             this.$priceInput = $('#maktub-price');
             this.$statusToggle = $('#maktub-status-toggle');
             this.$statusText = $('#maktub-status-text');
@@ -46,6 +49,8 @@
                 if (self.$grid.is(':visible')) { self.$dashModal.removeClass('is-active').hide(); } 
                 else { self.showGridOnly(); }
             });
+
+            this.$btnNew.on('click', function() { self.openCreateModal(); });
 
             $(document).on('click', '.maktub-cat-card', function() {
                 const slug = $(this).data('slug');
@@ -94,7 +99,6 @@
             const self = this;
             this.$dashModal.addClass('is-active').show();
             this.$modalBody.show();
-            
             $.when(
                 $.ajax({ url: `${maktubData.restUrl}/products`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); } }),
                 $.ajax({ url: `${maktubData.restUrl}/inventory`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); } })
@@ -104,7 +108,16 @@
                 self.inventory = res2[0];
                 self.renderInventoryBar();
                 self.showGridOnly();
+                self.populateCatSelect();
             });
+        },
+
+        populateCatSelect: function() {
+            let html = '<option value="">Selecione uma Categoria...</option>';
+            this.categories.forEach(cat => {
+                html += `<option value="${cat.slug}">${cat.name}</option>`;
+            });
+            this.$catSelect.html(html);
         },
 
         renderInventoryBar: function() {
@@ -137,7 +150,6 @@
         showGridOnly: function() {
             this.$btnBack.show(); this.$mainTitle.text('Escolha uma Categoria'); this.$grid.show(); this.$list.hide(); this.currentCategory = 'grid';
             let gridHtml = '';
-            // LOGIC v1.3.56: Added Sorvetes
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas', 'sorvetes'];
             slugsToShow.forEach(slug => {
                 const cat = (slug === 'bebidas') ? { name: 'Bebidas', slug: 'bebidas' } : this.categories.find(c => c.slug === slug);
@@ -149,7 +161,6 @@
                     else if (cat.slug.includes('porcao') || cat.slug.includes('porcoes')) icon = '🍟';
                     else if (cat.slug === 'bebidas') icon = '🥤';
                     else if (cat.slug === 'sorvetes') icon = '🍦';
-                    
                     const stats = this.getStatsForCategory(cat.slug);
                     gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}">${stats}<div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
@@ -195,7 +206,7 @@
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente' || cat === 'cachorro-quente-acrescimo') borderClass = 'b-hotdog';
             else if (cat === 'porcoes' || cat === 'porcoes-pasteis') borderClass = 'b-bege';
-            else if (cat === 'sorvetes') borderClass = 'b-sorvete'; // LOGIC v1.3.56
+            else if (cat === 'sorvetes') borderClass = 'b-sorvete';
             else if (cat === 'cervejas') borderClass = 'b-beer';
             else if (cat === 'agua') borderClass = 'b-water';
             else if (cat === 'del-valle-290ml' || cat === 'refri-600ml') borderClass = 'b-peach';
@@ -212,27 +223,74 @@
             `;
         },
 
+        openCreateModal: function() {
+            this.$productIdInput.val('0');
+            this.$titleInput.val('');
+            this.$catSelect.val(this.currentCategory !== 'grid' ? this.currentCategory : '');
+            this.$priceInput.val('');
+            this.$statusToggle.prop('checked', true);
+            this.$statusText.text('Ativo').addClass('status-is-ativo').removeClass('status-is-inativo');
+            this.$descInput.val('');
+            this.$modalTitle.text('Novo Item');
+            this.$submitBtn.text('Cadastrar Item');
+            $('#maktub-cat-field-wrapper').show();
+            this.$editModal.addClass('is-active').show(); this.$form.show(); this.$loader.hide();
+        },
+
         openEditModal: function(productId) {
             const self = this; this.$editModal.addClass('is-active').show(); this.$form.hide(); this.$loader.show(); this.$productIdInput.val(productId);
+            $('#maktub-cat-field-wrapper').show();
+            this.$submitBtn.text('Salvar Alterações');
             $.ajax({
                 url: `${maktubData.restUrl}/product/${productId}`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
                 success: function(response) {
                     self.$loader.hide(); self.$form.show();
-                    self.$modalTitle.text(response.title || 'Produto');
+                    self.$modalTitle.text('Editar Item');
+                    self.$titleInput.val(response.title || '');
                     let p = response.preco || '0'; p = parseFloat(p).toFixed(2).replace('.', ','); self.$priceInput.val(p);
                     let isActive = (response.status == '1');
                     self.$statusToggle.prop('checked', isActive); self.$statusText.text(isActive ? 'Ativo' : 'Inativo');
                     self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isActive ? 'status-is-ativo' : 'status-is-inativo');
                     self.$descInput.val(response.descricao || '');
+                    // Find product cat in allProducts to pre-select
+                    const product = self.allProducts.find(x => x.id == productId);
+                    if (product) self.$catSelect.val(product.cat);
                 }
             });
         },
 
         saveData: function() {
-            const self = this; const productId = this.$productIdInput.val(); let cleanPrice = this.$priceInput.val().replace(',', '.'); const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
-            const data = { preco: cleanPrice, descricao: this.$descInput.val(), status: statusVal };
-            this.$submitBtn.prop('disabled', true).text('Salvando...');
-            $.ajax({ url: `${maktubData.restUrl}/product/${productId}`, method: 'POST', data: data, beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); }, success: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.$editModal.removeClass('is-active').hide(); self.openDashboard(); }, error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); console.error('Error saving item.'); } });
+            const self = this; 
+            const productId = this.$productIdInput.val(); 
+            let cleanPrice = this.$priceInput.val().replace(',', '.'); 
+            const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
+            
+            const data = { 
+                post_title: this.$titleInput.val(),
+                category: this.$catSelect.val(),
+                preco: cleanPrice, 
+                descricao: this.$descInput.val(), 
+                status: statusVal 
+            };
+
+            const url = (productId === '0') ? `${maktubData.restUrl}/product` : `${maktubData.restUrl}/product/${productId}`;
+            
+            this.$submitBtn.prop('disabled', true).text('Processando...');
+            $.ajax({ 
+                url: url, 
+                method: 'POST', 
+                data: data, 
+                beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); }, 
+                success: function() { 
+                    self.$submitBtn.prop('disabled', false); 
+                    self.$editModal.removeClass('is-active').hide(); 
+                    self.openDashboard(); 
+                }, 
+                error: function() { 
+                    self.$submitBtn.prop('disabled', false).text('Tentar Novamente'); 
+                    console.error('Error saving item.'); 
+                } 
+            });
         }
     };
 

@@ -94,7 +94,6 @@
             const self = this;
             this.$dashModal.addClass('is-active').show();
             this.$modalBody.show();
-            
             $.when(
                 $.ajax({ url: `${maktubData.restUrl}/products`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); } }),
                 $.ajax({ url: `${maktubData.restUrl}/inventory`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); } })
@@ -113,7 +112,6 @@
             }
             const $bar = $('#maktub-inventory-bar');
             let html = '';
-            // Backend already sends sorted alphabetically in v1.3.50
             for (const [ing, status] of Object.entries(this.inventory)) {
                 const statusClass = status === '1' ? 'is-available' : 'is-unavailable';
                 html += `<div class="maktub-inventory-tag ${statusClass}" data-ingredient="${ing}">${ing}</div>`;
@@ -189,9 +187,20 @@
         buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null) {
             const statusClass = (item.status != '1') ? 'is-inactive' : ''; 
             const cat = item.cat || ''; let borderClass = forceBorder || '';
+            
+            // FULL RESTORE OF LUXURY BORDERS v1.3.52
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente' || cat === 'cachorro-quente-acrescimo') borderClass = 'b-hotdog';
             else if (cat === 'porcoes' || cat === 'porcoes-pasteis') borderClass = 'b-bege';
+            else if (cat === 'cervejas') borderClass = 'b-beer';
+            else if (cat === 'agua') borderClass = 'b-water';
+            else if (cat === 'del-valle-290ml' || cat === 'refri-600ml') borderClass = 'b-peach';
+            else if (cat === 'refri-lata-350ml') borderClass = 'b-refri-lata';
+            else if (cat === 'refri-500ml') borderClass = 'b-refri-500';
+            else if (cat === 'refri-2l') borderClass = 'b-refri-2l';
+            else if (cat === 'sucos-naturais') borderClass = 'b-mango';
+            else if (cat === 'sucos-polpa-preco') borderClass = 'b-forest';
+
             return `
                 <div class="maktub-list-item ${statusClass} ${borderClass}">
                     <div class="maktub-item-info"><h4>${item.title || 'Sem Título'}</h4><div class="maktub-item-price">${this.formatPrice(item.price)}</div></div>

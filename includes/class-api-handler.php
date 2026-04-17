@@ -31,6 +31,19 @@ class Maktub_API_Handler {
         return current_user_can( 'manage_options' ) || current_user_can( 'administrator' ) || current_user_can( 'shop_manager' );
     }
 
+    private function is_active( $value ) {
+        if ( empty($value) ) return false;
+        
+        // Handle Jet Engine checkbox arrays
+        if ( is_array($value) ) {
+            return in_array('Disponível', $value) || in_array('1', $value) || in_array('true', $value);
+        }
+        
+        // Handle strings
+        $v = trim( (string) $value );
+        return ( $v === 'Disponível' || $v === '1' || $v === 'true' || $v === 'on' );
+    }
+
     public function get_products() {
         $products = [];
         $args = [
@@ -43,11 +56,13 @@ class Maktub_API_Handler {
 
         foreach ( $posts as $post ) {
             $id = $post->ID;
+            
+            // Jet Engine Meta
             $price = get_post_meta( $id, 'preco', true );
             if(empty($price)) $price = get_post_meta($id, '_price', true);
             
             $status_raw = get_post_meta( $id, 'status', true );
-            $status = ($status_raw === 'Disponível' || $status_raw == '1') ? '1' : '0';
+            $status = $this->is_active($status_raw) ? '1' : '0';
 
             $terms = get_the_terms( $id, 'maktub-categorias' );
             $cat_slug = ($terms && !is_wp_error($terms)) ? $terms[0]->slug : '';
@@ -76,7 +91,7 @@ class Maktub_API_Handler {
         $id = $request['id'];
         $price = get_post_meta( $id, 'preco', true );
         $status_raw = get_post_meta( $id, 'status', true );
-        $status = ($status_raw === 'Disponível' || $status_raw == '1') ? '1' : '0';
+        $status = $this->is_active($status_raw) ? '1' : '0';
 
         return [
             'id' => $id,
@@ -98,6 +113,7 @@ class Maktub_API_Handler {
         }
 
         if ( isset( $params['status'] ) ) {
+            // Standard JET Engine behavior: string for checked, empty for unchecked
             update_post_meta( $id, 'status', $params['status'] );
         }
 

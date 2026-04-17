@@ -161,8 +161,8 @@
             const self = this;
             let html = '';
             
-            // Reverted to 1.3.11 logic: No global Mini filtering unless specifically asked
-            const filteredProducts = this.allProducts;
+            // GLOBAL MINI FILTER v1.3.23
+            const filteredProducts = this.allProducts.filter(p => p.title && !p.title.toLowerCase().includes('mini'));
 
             if (categorySlug === 'bebidas') {
                 const beverageMap = [
@@ -174,11 +174,33 @@
                 beverageMap.forEach(bev => {
                     const catProducts = filteredProducts.filter(p => p.cat === bev.slug).sort((a,b) => a.title.localeCompare(b.title));
                     if (catProducts.length > 0) {
-                        // Title logic from 1.3.12+ was kept as it was liked
                         html += `<h3 class="maktub-list-section-title">${bev.name}</h3>`;
                         catProducts.forEach(item => { html += self.buildItemHtml(item); });
                     }
                 });
+            } else if (categorySlug === 'porcoes') {
+                const pasteisItems = filteredProducts.filter(p => p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
+                const generalItems = filteredProducts.filter(p => p.cat === 'porcoes').sort((a,b) => a.title.localeCompare(b.title));
+                
+                if (pasteisItems.length > 0) {
+                    html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
+                    pasteisItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                }
+                
+                if (generalItems.length > 0) {
+                    html += '<h3 class="maktub-list-section-title">Porções</h3>';
+                    generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                }
+            } else if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce' || categorySlug === 'cachorro-quente') {
+                const mainItems = filteredProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
+                const extraSlug = (categorySlug === 'pastel-salgado') ? 'pastel-salgado-adicional' : (categorySlug === 'pastel-doce' ? 'pastel-doce-adicional' : 'cachorro-quente-acrescimo');
+                const extraItems = filteredProducts.filter(p => p.cat === extraSlug).sort((a,b) => a.title.localeCompare(b.title));
+
+                mainItems.forEach(item => { html += self.buildItemHtml(item); });
+                if (extraItems.length > 0) {
+                    html += '<h3 class="maktub-list-section-title">Adicionais</h3>';
+                    extraItems.forEach(item => { html += self.buildItemHtml(item, true); });
+                }
             } else {
                 let filtered = filteredProducts.filter(p => p.cat === categorySlug).sort((a, b) => a.title.localeCompare(b.title));
                 if (filtered.length === 0 && categorySlug === 'all') filtered = [...filteredProducts];

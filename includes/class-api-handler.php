@@ -32,8 +32,12 @@ class Maktub_API_Handler {
     }
 
     private function is_active( $id ) {
+        // Strict check based on Jet Engine meta value "disponivel"
         $meta = get_post_meta( $id, 'status', true );
+        
         if ( empty($meta) ) return false;
+
+        // If it's an array (standard Jet Checkbox)
         if ( is_array($meta) ) {
             foreach($meta as $val) {
                 $v = strtolower(trim((string)$val));
@@ -41,6 +45,8 @@ class Maktub_API_Handler {
             }
             return false;
         }
+
+        // If it's a serialized string
         if ( is_serialized($meta) ) {
             $unserialized = @unserialize($meta);
             if ( is_array($unserialized) ) {
@@ -51,6 +57,8 @@ class Maktub_API_Handler {
             }
             return false;
         }
+
+        // Simple string comparison
         $v = strtolower(trim((string)$meta));
         return ( $v === 'disponivel' || $v === '1' || $v === 'true' || $v === 'on' );
     }
@@ -70,6 +78,7 @@ class Maktub_API_Handler {
             $price = get_post_meta( $id, 'preco', true );
             if(empty($price)) $price = get_post_meta($id, '_price', true);
             
+            // LOGIC v1.3.33: Checking for lowercase "disponivel"
             $status = $this->is_active($id) ? '1' : '0';
 
             $terms = get_the_terms( $id, 'maktub-categorias' );
@@ -121,6 +130,7 @@ class Maktub_API_Handler {
         }
 
         if ( isset( $params['status'] ) ) {
+            // FIX v1.3.33: IMPORTANT! Using lowercase "disponivel" to match Jet Engine settings
             if ( $params['status'] === 'Disponível' ) {
                 update_post_meta( $id, 'status', ['disponivel'] );
             } else {

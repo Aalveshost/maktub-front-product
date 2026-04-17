@@ -81,7 +81,6 @@ class Maktub_API_Handler {
                 'price' => $price,
                 'status' => $status,
                 'cat' => $cat_slug,
-                'desc' => get_post_meta( $id, 'descricao', true ), // Added for v1.3.34
             ];
         }
 

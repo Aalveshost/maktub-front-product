@@ -252,17 +252,10 @@
             else if (cat === 'sucos-naturais') borderClass = 'b-mango';
             else if (cat === 'sucos-polpa-preco') borderClass = 'b-forest';
 
-            // DESCRIPTION FOR CACHORRO QUENTE v1.3.34
-            let descHtml = '';
-            if (cat === 'cachorro-quente' && item.desc) {
-                descHtml = `<p class="maktub-item-desc">${item.desc}</p>`;
-            }
-
             return `
                 <div class="maktub-list-item ${statusClass} ${borderClass}">
                     <div class="maktub-item-info">
                         <h4>${item.title || 'Sem Título'}</h4>
-                        ${descHtml}
                         <div class="maktub-item-price">${this.formatPrice(item.price)}</div>
                     </div>
                     <div class="maktub-item-actions">

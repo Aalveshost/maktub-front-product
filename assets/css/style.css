@@ -1,5 +1,5 @@
 /* 
-  Maktub Front Product Manager - Version 1.3.34
+  Maktub Front Product Manager - Version 1.3.33
   Premium Orange Theme (#F05828)
 */
 
@@ -7,7 +7,6 @@
 
 .maktub-modal * {
     box-sizing: border-box;
-    font-family: 'Quicksand', sans-serif !important;
 }
 
 .maktub-modal {
@@ -73,6 +72,7 @@
     font-size: 20px;
     font-weight: 700;
     color: #2D2D2D;
+    font-family: 'Quicksand', sans-serif;
 }
 
 .maktub-modal-close {
@@ -116,7 +116,7 @@
 .maktub-cat-card.is-active { border-color: #f05828; background: #fff8f5; }
 
 .maktub-cat-img { font-size: 32px; margin-bottom: 10px; display: block; }
-.maktub-cat-card h5 { margin: 0; font-size: 14px; color: #444; font-weight: 600; }
+.maktub-cat-card h5 { margin: 0; font-size: 14px; color: #444; font-family: 'Quicksand', sans-serif; font-weight: 600; }
 
 /* PRODUCT LIST */
 .maktub-list { display: flex; flex-direction: column; gap: 12px; }
@@ -140,27 +140,8 @@
 
 .maktub-list-item:hover { box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
 
-.maktub-item-info h4 { margin: 0 0 5px 0; font-size: 17px; font-weight: 600; color: #333; }
-.maktub-item-price { color: #10b981; font-weight: 700; font-size: 15px; }
-
-/* DESCRIPTION v1.3.34 */
-.maktub-item-desc {
-    font-family: 'Quicksand', sans-serif !important;
-    font-size: 12.8px !important;
-    font-weight: 500;
-    color: #4F4A47E0;
-    margin-bottom: 2px;
-    margin-right: 5px;
-    text-align: left;
-    margin-top: 5px;
-    flex-grow: 1;
-    height: 40px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    line-height: 1.4;
-}
+.maktub-item-info h4 { margin: 0 0 5px 0; font-size: 17px; font-weight: 600; color: #333; font-family: 'Quicksand', sans-serif; }
+.maktub-item-price { color: #10b981; font-weight: 700; font-family: 'Quicksand', sans-serif; font-size: 15px; }
 
 /* SECTION TITLES */
 .maktub-list-section-title {
@@ -171,6 +152,7 @@
     padding-bottom: 8px;
     border-bottom: 2px solid #fff1ec;
     text-align: center;
+    font-family: 'Quicksand', sans-serif;
 }
 
 .maktub-btn-edit {
@@ -179,6 +161,7 @@
     border: none;
     padding: 10px 22px;
     border-radius: 12px;
+    font-family: 'Quicksand', sans-serif;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -188,7 +171,7 @@
 
 /* FORM ELEMENTS */
 .maktub-field-group { margin-bottom: 20px; }
-.maktub-field-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+.maktub-field-group label { display: block; margin-bottom: 8px; font-family: 'Quicksand', sans-serif; font-weight: 600; color: #555; }
 
 .maktub-field-group input[type="text"],
 .maktub-field-group textarea {
@@ -196,6 +179,7 @@
     padding: 12px 15px;
     border: 2px solid #eee;
     border-radius: 12px;
+    font-family: 'Quicksand', sans-serif;
     font-size: 16px;
     transition: border-color 0.2s;
 }
@@ -234,12 +218,12 @@
 .maktub-toggle-checkbox:checked + .maktub-toggle-label { background: #10b981; }
 .maktub-toggle-checkbox:checked + .maktub-toggle-label::after { transform: translateX(24px); }
 
-#maktub-status-text { font-weight: 600; font-size: 15px; }
+#maktub-status-text { font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 15px; }
 .status-is-ativo { color: #10b981; }
 .status-is-inativo { color: #ef4444; }
 
 .maktub-modal-footer { padding-top: 10px; }
-.maktub-btn-primary { width: 100%; padding: 15px; background: #f05828; color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 17px; cursor: pointer; }
+.maktub-btn-primary { width: 100%; padding: 15px; background: #f05828; color: #fff; border: none; border-radius: 12px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 17px; cursor: pointer; }
 .maktub-btn-primary:disabled { background: #ccc; cursor: not-allowed; }
 
 /* SHARED BORDERS */
@@ -265,6 +249,7 @@
     color: #fff;
     padding: 12px 25px;
     border-radius: 50px;
+    font-family: 'Quicksand', sans-serif;
     font-weight: 600;
     z-index: 9999999;
     transition: transform 0.3s ease;
@@ -278,6 +263,7 @@
     background: none;
     border: none;
     color: #f05828;
+    font-family: 'Quicksand', sans-serif;
     font-weight: 600;
     font-size: 16px;
     cursor: pointer;

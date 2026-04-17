@@ -3,7 +3,7 @@
  * Plugin Name: Maktub Front Product Manager
  * Plugin URI: https://github.com/Aalveshost/maktub-front-product
  * Description: Interface premium para edição de produtos (Preço e Status) no frontend. Integrado com Jet Engine e WooCommerce.
- * Version: 1.3.46
+ * Version: 1.3.47
  * Author: Alef Alves
  * Author URI: https://aalves.dev
  * Text Domain: maktub-front
@@ -32,7 +32,7 @@ final class Maktub_Front_Product {
 	}
 
 	private function define_constants() {
-		define( 'MAKTUB_FRONT_VERSION', '1.3.46' );
+		define( 'MAKTUB_FRONT_VERSION', '1.3.47' );
 		define( 'MAKTUB_FRONT_PATH', plugin_dir_path( __FILE__ ) );
 		define( 'MAKTUB_FRONT_URL', plugin_dir_url( __FILE__ ) );
 	}
@@ -146,6 +146,26 @@ final class Maktub_Front_Product {
 							<button type="submit" class="maktub-btn maktub-btn-primary">Salvar Alterações</button>
 						</div>
 					</form>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Inventory Modal (Bulk) -->
+		<div id="maktub-inventory-modal" class="maktub-modal" style="display:none;">
+			<div class="maktub-modal-overlay"></div>
+			<div class="maktub-modal-content">
+				<div class="maktub-modal-header">
+					<h3 id="maktub-inv-title">Gestão de Insumo</h3>
+					<button class="maktub-modal-close">&times;</button>
+				</div>
+				<div class="maktub-modal-body">
+					<div id="maktub-inv-desc" style="padding: 20px; text-align: center; font-weight: 600; color: #555;">
+						Deseja alterar o status de todos os itens com este ingrediente?
+					</div>
+					<div class="maktub-modal-footer" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+						<button id="maktub-inv-btn-on" class="maktub-btn maktub-btn-success" style="padding: 15px; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; color: #fff;">ATIVAR TODOS</button>
+						<button id="maktub-inv-btn-off" class="maktub-btn maktub-btn-danger" style="padding: 15px; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; color: #fff;">DESATIVAR TODOS</button>
+					</div>
 				</div>
 			</div>
 		</div>

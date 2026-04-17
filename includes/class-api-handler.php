@@ -192,14 +192,29 @@ class Maktub_API_Handler {
         $count = 0;
 
         foreach($posts as $post) {
-            $title = strtolower($post->post_title);
-            if (strpos($title, $ing) !== false) {
-                // Bulk Toggle Status
+            $title = mb_strtolower($post->post_title, 'UTF-8');
+            $term_found = (strpos($title, $ing) !== false);
+            
+            if (!$term_found) {
+                $desc = mb_strtolower(get_post_meta($post->ID, 'descricao', true), 'UTF-8');
+                $term_found = (strpos($desc, $ing) !== false);
+            }
+
+            if ($term_found) {
+                // Bulk Toggle Status - LOGIC ALIGNED WITH GRID v1.3.47
                 if ($new_status == '1') {
                     update_post_meta($post->ID, 'status', ['disponivel']);
                 } else {
                     update_post_meta($post->ID, 'status', []);
                 }
+                
+                // Ensure WooCommerce compatibility if needed
+                if ($new_status == '0') {
+                    update_post_meta($post->ID, '_stock_status', 'outofstock');
+                } else {
+                    update_post_meta($post->ID, '_stock_status', 'instock');
+                }
+
                 clean_post_cache($post->ID);
                 $count++;
             }

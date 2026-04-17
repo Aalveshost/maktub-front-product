@@ -4,12 +4,13 @@
     const MaktubEditor = {
         allProducts: [],
         categories: [],
-        inventory: {}, // ingredient -> status ('1' active, '0' inactive)
+        inventory: {}, 
         currentMode: 'classic', 
         isBatchMode: false,
         currentBatchCategory: null,
         currentCategory: 'all',
         statusChangedInModal: false,
+        pendingIngredient: null,
 
         init: function() {
             this.cacheDOM();
@@ -20,6 +21,7 @@
         cacheDOM: function() {
             this.$dashModal = $('#maktub-dashboard-modal');
             this.$editModal = $('#maktub-editor-modal');
+            this.$invModal = $('#maktub-inventory-modal');
             this.$form = $('#maktub-edit-form');
             this.$loader = $('#maktub-loader');
             this.$list = $('#maktub-dashboard-list');
@@ -27,8 +29,7 @@
             this.$btnBack = $('#maktub-btn-back');
             this.$mainTitle = $('#maktub-main-title');
             this.$modalBody = this.$dashModal.find('.maktub-modal-body');
-            this.$inventoryBar = null; // Will create dynamically
-
+            
             this.$priceInput = $('#maktub-price');
             this.$statusToggle = $('#maktub-status-toggle');
             this.$statusText = $('#maktub-status-text');
@@ -47,13 +48,12 @@
 
         showToast: function(message, type = 'success') {
             const self = this;
-            this.$toast.text(message).css('background', type === 'success' ? '#10b981' : '#f05828').addClass('is-active');
-            setTimeout(function() { self.$toast.removeClass('is-active'); }, 1800);
+            this.$toast.text(message).css('background', type === 'success' ? '#065f46' : '#f05828').addClass('is-active');
+            setTimeout(function() { self.$toast.removeClass('is-active'); }, 2000);
         },
 
         bindEvents: function() {
             const self = this;
-            $(document).on('click', '.maktub-trigger-classic', function(e) { e.preventDefault(); self.currentMode = 'classic'; self.openDashboard(); });
             $(document).on('click', '.maktub-trigger-grid', function(e) { e.preventDefault(); self.currentMode = 'grid'; self.openDashboard(); });
             
             this.$btnBack.on('click', function(e) { 
@@ -64,17 +64,21 @@
             $(document).on('click', '.maktub-cat-card', function() {
                 const slug = $(this).data('slug');
                 if (self.currentMode === 'grid') { self.showListForCategory(slug); } 
-                else { $('.maktub-cat-card').removeClass('is-active'); $(this).addClass('is-active'); self.renderList(slug); }
             });
 
-            // INVENTORY CLICK v1.3.46
+            // INVENTORY MODAL TRIGGER v1.3.47
             $(document).on('click', '.maktub-inventory-tag', function() {
                 const ing = $(this).data('ingredient');
-                const status = $(this).data('status');
-                self.confirmInventoryToggle(ing, status);
+                self.pendingIngredient = ing;
+                $('#maktub-inv-title').text('Gestão de ' + ing.toUpperCase());
+                $('#maktub-inv-desc').text(`Alterar status de todos os itens que contêm "${ing.toUpperCase()}"?`);
+                self.$invModal.addClass('is-active').show();
             });
 
-            $(document).on('click', '.maktub-btn-edit', function(e) { e.preventDefault(); const productId = $(this).data('product-id'); const batchCat = $(this).data('batch-category'); if (batchCat) { self.isBatchMode = true; self.currentBatchCategory = batchCat; self.openEditModal(productId, true); } else { self.isBatchMode = false; self.currentBatchCategory = null; if (productId) self.openEditModal(productId); } });
+            $('#maktub-inv-btn-on').on('click', function() { self.toggleInventory(self.pendingIngredient, '1'); });
+            $('#maktub-inv-btn-off').on('click', function() { self.toggleInventory(self.pendingIngredient, '0'); });
+
+            $(document).on('click', '.maktub-btn-edit', function(e) { e.preventDefault(); const productId = $(this).data('product-id'); self.openEditModal(productId); });
             $(document).on('click', '.maktub-modal-close', function(e) { e.stopPropagation(); $(this).closest('.maktub-modal').removeClass('is-active').hide(); });
 
             this.$priceInput.on('input', function() { let v = $(this).val().replace(/\D/g, ''); if (v.length > 5) v = v.substring(0, 5); if (parseInt(v) > 99900) v = '99900'; if (v === '') { $(this).val(''); return; } v = (parseInt(v) / 100).toFixed(2).replace('.', ','); $(this).val(v); });
@@ -82,25 +86,24 @@
             this.$form.on('submit', function(e) { e.preventDefault(); self.saveData(); });
         },
 
-        confirmInventoryToggle: function(ing, currentStatus) {
+        toggleInventory: function(ing, newStatus) {
             const self = this;
-            const action = currentStatus === '1' ? 'DESATIVAR' : 'ATIVAR';
-            const msg = `Deseja ${action} todos os produtos que contêm "${ing.toUpperCase()}"?`;
+            this.$invModal.removeClass('is-active').hide();
+            this.showToast('Atualizando em massa...', 'info');
             
-            if (confirm(msg)) {
-                this.showToast('Atualizando em massa...', 'info');
-                $.ajax({
-                    url: `${maktubData.restUrl}/inventory/toggle`,
-                    method: 'POST',
-                    data: { ingredient: ing, status: currentStatus === '1' ? '0' : '1' },
-                    beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
-                    success: function(response) {
-                        self.showToast(`Sucesso! ${response.count} itens atualizados.`);
-                        self.openDashboard(); // Reload full dashboard to update everything
-                    },
-                    error: function() { self.showToast('Erro na atualização.', 'error'); }
-                });
-            }
+            $.ajax({
+                url: `${maktubData.restUrl}/inventory/toggle`,
+                method: 'POST',
+                data: { ingredient: ing, status: newStatus },
+                beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
+                success: function(response) {
+                    if (response.success) {
+                        self.showToast(`Sucesso! ${response.count} itens sincronizados.`);
+                        self.openDashboard(); 
+                    }
+                },
+                error: function() { self.showToast('Erro ao atualizar estoque.', 'error'); }
+            });
         },
 
         formatPrice: function(price) {
@@ -114,7 +117,6 @@
             this.$dashModal.addClass('is-active').show();
             this.$modalBody.show();
             
-            // FETCH PRODUCTS AND INVENTORY
             $.when(
                 $.ajax({ url: `${maktubData.restUrl}/products`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); } }),
                 $.ajax({ url: `${maktubData.restUrl}/inventory`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); } })
@@ -124,7 +126,7 @@
                 self.inventory = res2[0];
                 
                 self.renderInventoryBar();
-                if (self.currentMode === 'grid') self.showGridOnly(); else self.showClassicView();
+                self.showGridOnly();
             });
         },
 
@@ -136,7 +138,7 @@
             let html = '';
             for (const [ing, status] of Object.entries(this.inventory)) {
                 const statusClass = status === '1' ? 'is-available' : 'is-unavailable';
-                html += `<div class="maktub-inventory-tag ${statusClass}" data-ingredient="${ing}" data-status="${status}">${ing}</div>`;
+                html += `<div class="maktub-inventory-tag ${statusClass}" data-ingredient="${ing}">${ing}</div>`;
             }
             $bar.html(html);
         },
@@ -149,20 +151,14 @@
                 targetProducts = filtered.filter(p => bevSlugs.includes(p.cat));
             } else if (slug === 'porcoes') {
                 targetProducts = filtered.filter(p => p.cat === 'porcoes' || p.cat === 'porcoes-pasteis');
-            } else {
-                targetProducts = filtered.filter(p => p.cat === slug);
-            }
+            } else { targetProducts = filtered.filter(p => p.cat === slug); }
             const total = targetProducts.length;
             const active = targetProducts.filter(p => p.status == '1').length;
             return total > 0 ? `<span class="maktub-cat-badge">${active}/${total}</span>` : '';
         },
 
         showGridOnly: function() {
-            this.$btnBack.show();
-            this.$mainTitle.text('Escolha uma Categoria');
-            this.$grid.show();
-            this.$list.hide();
-            this.currentCategory = 'grid';
+            this.$btnBack.show(); this.$mainTitle.text('Escolha uma Categoria'); this.$grid.show(); this.$list.hide(); this.currentCategory = 'grid';
             let gridHtml = '';
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas'];
             slugsToShow.forEach(slug => {
@@ -181,41 +177,14 @@
             this.$grid.html(gridHtml);
         },
 
-        showClassicView: function() {
-            this.$btnBack.hide();
-            this.$mainTitle.text('Gerenciar Maktub');
-            this.$grid.show(); 
-            this.$list.show(); 
-            let gridHtml = `<div class="maktub-cat-card" data-slug="all"><div class="maktub-cat-img">🏠</div><h5>Todos</h5></div>`;
-            this.categories.forEach(cat => {
-                let icon = '📦';
-                const slug = cat.slug.toLowerCase();
-                if (slug.includes('pastel')) icon = '🥟';
-                else if (slug.includes('bebida') || slug.includes('refri') || slug.includes('cerveja')) icon = '🥤';
-                else if (slug.includes('doce')) icon = '🍩';
-                else if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
-                else if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
-                else if (slug.includes('adicional') || slug.includes('acrescimo')) icon = '✨';
-                const stats = this.getStatsForCategory(cat.slug);
-                const isActive = (slug === 'pastel-salgado') ? 'is-active' : '';
-                gridHtml += `<div class="maktub-cat-card ${isActive}" data-slug="${cat.slug}"><div class="maktub-cat-img">${stats}${icon}</div><h5>${cat.name}</h5></div>`;
-            });
-            this.$grid.html(gridHtml);
-            this.renderList('pastel-salgado');
-        },
-
         showListForCategory: function(slug) {
             this.$mainTitle.text(slug === 'bebidas' ? 'Bebidas' : (this.categories.find(c => c.slug === slug)?.name || 'Produtos'));
-            this.$btnBack.show();
-            this.$grid.hide();
-            this.$list.show();
+            this.$btnBack.show(); this.$grid.hide(); this.$list.show();
             this.renderList(slug);
         },
 
         renderList: function(categorySlug) {
-            const self = this;
-            this.currentCategory = categorySlug;
-            let html = '';
+            const self = this; this.currentCategory = categorySlug; let html = '';
             const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
             if (categorySlug === 'bebidas') {
                 const beverageMap = [ { slug: 'cervejas', name: 'Cervejas' }, { slug: 'agua', name: 'Água' }, { slug: 'del-valle-290ml', name: 'Dell Valle 290ml' }, { slug: 'refri-lata-350ml', name: 'Refri Lata 350ml' }, { slug: 'refri-500ml', name: 'Refri 500ml' }, { slug: 'refri-600ml', name: 'Refri 600ml' }, { slug: 'refri-2l', name: 'Refri 2L' }, { slug: 'sucos-naturais', name: 'Sucos Naturais' }, { slug: 'sucos-polpa-preco', name: 'Sucos de Polpa' } ];
@@ -224,16 +193,8 @@
                     if (catProducts.length > 0) { html += `<h3 class="maktub-list-section-title">${bev.name}</h3>`; catProducts.forEach(item => { html += self.buildItemHtml(item); }); }
                 });
             } else if (categorySlug === 'porcoes') {
-                const pasteisItems = filteredProducts.filter(p => p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
-                const generalItems = filteredProducts.filter(p => p.cat === 'porcoes').sort((a,b) => a.title.localeCompare(b.title));
-                if (pasteisItems.length > 0) {
-                    html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
-                    const isAnyActive = pasteisItems.some(item => item.status == '1');
-                    const master = pasteisItems[0];
-                    const masterCopy = { id: master.id, title: 'Todas Porções de Pastéis (Vários Sabores)', price: master.price, status: isAnyActive ? '1' : '0', cat: master.cat };
-                    html += self.buildItemHtml(masterCopy, false, 'b-bege', 'porcoes-pasteis');
-                }
-                if (generalItems.length > 0) { html += '<h3 class="maktub-list-section-title">Porções</h3>'; generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); }); }
+                const generalItems = filteredProducts.filter(p => p.cat === 'porcoes' || p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
+                generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
             } else if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce' || categorySlug === 'cachorro-quente') {
                 const mainItems = filteredProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
                 const extraSlug = (categorySlug === 'pastel-salgado') ? 'pastel-salgado-adicional' : (categorySlug === 'pastel-doce' ? 'pastel-doce-adicional' : 'cachorro-quente-acrescimo');
@@ -242,71 +203,47 @@
                 if (extraItems.length > 0) { html += '<h3 class="maktub-list-section-title">Adicionais</h3>'; extraItems.forEach(item => { html += self.buildItemHtml(item, true); }); }
             } else {
                 let filtered = filteredProducts.filter(p => p.cat === categorySlug).sort((a, b) => a.title.localeCompare(b.title));
-                if (filtered.length === 0 && categorySlug === 'all') filtered = [...filteredProducts];
                 if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } else { filtered.forEach(item => { html += self.buildItemHtml(item); }); }
             }
             this.$list.html(html);
         },
 
-        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null, batchCategory = null) {
+        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null) {
             const statusClass = (item.status != '1') ? 'is-inactive' : ''; 
-            const cat = item.cat || '';
-            let borderClass = forceBorder || '';
-            const dataBatch = batchCategory ? `data-batch-category="${batchCategory}"` : '';
+            const cat = item.cat || ''; let borderClass = forceBorder || '';
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente' || cat === 'cachorro-quente-acrescimo') borderClass = 'b-hotdog';
             else if (cat === 'porcoes' || cat === 'porcoes-pasteis') borderClass = 'b-bege';
-            else if (cat === 'cervejas') borderClass = 'b-beer';
-            else if (cat === 'agua') borderClass = 'b-water';
-            else if (cat === 'del-valle-290ml' || cat === 'refri-600ml') borderClass = 'b-peach';
-            else if (cat === 'refri-lata-350ml') borderClass = 'b-refri-lata';
-            else if (cat === 'refri-500ml') borderClass = 'b-refri-500';
-            else if (cat === 'refri-2l') borderClass = 'b-refri-2l';
-            else if (cat === 'sucos-naturais') borderClass = 'b-mango';
-            else if (cat === 'sucos-polpa-preco') borderClass = 'b-forest';
             return `
                 <div class="maktub-list-item ${statusClass} ${borderClass}">
                     <div class="maktub-item-info"><h4>${item.title || 'Sem Título'}</h4><div class="maktub-item-price">${this.formatPrice(item.price)}</div></div>
-                    <div class="maktub-item-actions"><button class="maktub-btn-edit" data-product-id="${item.id}" ${dataBatch}>Editar</button></div>
+                    <div class="maktub-item-actions"><button class="maktub-btn-edit" data-product-id="${item.id}">Editar</button></div>
                 </div>
             `;
         },
 
-        openEditModal: function(productId, isBatch = false) {
-            const self = this; this.$editModal.addClass('is-active').show(); this.$form.hide(); this.$loader.show(); this.$productIdInput.val(productId); this.isBatchMode = isBatch; this.statusChangedInModal = false;
+        openEditModal: function(productId) {
+            const self = this; this.$editModal.addClass('is-active').show(); this.$form.hide(); this.$loader.show(); this.$productIdInput.val(productId);
             $.ajax({
-                url: `${maktubData.restUrl}/product/${productId}`,
-                method: 'GET',
-                beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
+                url: `${maktubData.restUrl}/product/${productId}`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
                 success: function(response) {
                     self.$loader.hide(); self.$form.show();
-                    const titlePrefix = self.isBatchMode ? '[LOTE] ' : ''; self.$modalTitle.text(titlePrefix + (response.title || 'Produto'));
+                    self.$modalTitle.text(response.title || 'Produto');
                     let p = response.preco || '0'; p = parseFloat(p).toFixed(2).replace('.', ','); self.$priceInput.val(p);
-                    let isActive = (response.status == '1'); if (self.isBatchMode) { const targets = self.allProducts.filter(p => p.cat === self.currentBatchCategory && !p.title.toLowerCase().includes('mini')); isActive = targets.some(item => item.status == '1'); }
-                    self.$statusToggle.prop('checked', isActive); self.$statusText.text(isActive ? 'Ativo' : 'Inativo'); self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isActive ? 'status-is-ativo' : 'status-is-inativo');
-                    self.$descInput.val(response.descricao || ''); self.statusChangedInModal = false;
+                    let isActive = (response.status == '1');
+                    self.$statusToggle.prop('checked', isActive); self.$statusText.text(isActive ? 'Ativo' : 'Inativo');
+                    self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isActive ? 'status-is-ativo' : 'status-is-inativo');
+                    self.$descInput.val(response.descricao || '');
                 }
             });
         },
 
         saveData: function() {
             const self = this; const productId = this.$productIdInput.val(); let cleanPrice = this.$priceInput.val().replace(',', '.'); const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
-            const data = { preco: cleanPrice, descricao: this.$descInput.val() }; if (!this.isBatchMode || this.statusChangedInModal) { data.status = statusVal; }
+            const data = { preco: cleanPrice, descricao: this.$descInput.val(), status: statusVal };
             this.$submitBtn.prop('disabled', true).text('Salvando...');
-            if (this.isBatchMode) {
-                const targets = self.allProducts.filter(p => p.cat === self.currentBatchCategory && !p.title.toLowerCase().includes('mini'));
-                let count = 0;
-                const updateNext = () => {
-                    if (count >= targets.length) { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast(`Atualizado: ${count} itens em lote!`); self.$editModal.removeClass('is-active').hide(); self.refreshData(self.currentCategory); return; }
-                    $.ajax({ url: `${maktubData.restUrl}/product/${targets[count].id}`, method: 'POST', data: data, beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); }, success: function() { count++; updateNext(); }, error: function() { count++; updateNext(); } });
-                };
-                updateNext();
-            } else {
-                $.ajax({ url: `${maktubData.restUrl}/product/${productId}`, method: 'POST', data: data, beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); }, success: function(response) { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast(maktubData.i18n.success); self.$editModal.removeClass('is-active').hide(); self.refreshData(self.currentCategory); }, error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast(maktubData.i18n.error, 'error'); } });
-            }
-        },
-
-        refreshData: function(activeCat) { const self = this; $.ajax({ url: `${maktubData.restUrl}/products`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); }, success: function(response) { self.allProducts = response.products || []; self.renderList(activeCat); } }); }
+            $.ajax({ url: `${maktubData.restUrl}/product/${productId}`, method: 'POST', data: data, beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); }, success: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast('Atualizado!'); self.$editModal.removeClass('is-active').hide(); self.openDashboard(); }, error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast('Erro ao salvar.', 'error'); } });
+        }
     };
 
     $(document).ready(function() { MaktubEditor.init(); });

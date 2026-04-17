@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.46 - INVENTORY SYNC */
+/* Maktub Front Product Manager Styles v1.3.47 - FOREST GREEN & PREMIUM MODALS */
 
 :root {
     --maktub-orange: #F05828;
@@ -12,18 +12,21 @@
     --maktub-bg: #ffffff;
     --maktub-text: #1f2937;
     --maktub-gray: #a8a8a8;
-    --maktub-green: #065f46;
+    --maktub-green: #065f46; /* FOREST GREEN */
+    --maktub-red: #ef4444;
     --maktub-font: 'Quicksand', sans-serif;
 }
 
 #maktub-dashboard-modal, 
 #maktub-editor-modal,
+#maktub-inventory-modal,
 .maktub-triggers-wrapper {
     font-family: var(--maktub-font) !important;
 }
 
 #maktub-dashboard-modal *, 
 #maktub-editor-modal *,
+#maktub-inventory-modal *,
 .maktub-triggers-wrapper * {
     box-sizing: border-box !important;
 }
@@ -35,17 +38,19 @@
 
 .maktub-modal { position: fixed !important; inset: 0 !important; z-index: 1000000 !important; display: none; align-items: center !important; justify-content: center !important; padding: 20px !important; }
 .maktub-modal.is-active { display: flex !important; }
-.maktub-modal-overlay { position: absolute !important; inset: 0 !important; background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(2px) !important; }
-.maktub-modal-content { position: relative !important; width: 100% !important; max-width: 500px !important; max-height: 90vh !important; background: #ffffff !important; border-radius: 20px !important; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+.maktub-modal-overlay { position: absolute !important; inset: 0 !important; background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(4px) !important; }
+.maktub-modal-content { position: relative !important; width: 100% !important; max-width: 500px !important; max-height: 95vh !important; background: #ffffff !important; border-radius: 20px !important; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2) !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; animation: maktub-pop 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+
+@keyframes maktub-pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 .maktub-modal-header { display: flex !important; justify-content: space-between !important; align-items: center !important; padding: 1.25rem 1.5rem !important; border-bottom: 1px solid #f1f1f1 !important; background: #fff !important; }
 .maktub-modal-header h3 { margin: 0 !important; font-size: 1.25rem !important; font-weight: 700 !important; }
 #maktub-dashboard-modal .maktub-back-link { background: none !important; border: none !important; color: var(--maktub-orange) !important; font-weight: 700 !important; cursor: pointer !important; display: flex !important; align-items: center !important; gap: 4px !important; padding: 0 !important; }
-#maktub-dashboard-modal .maktub-modal-close, #maktub-editor-modal .maktub-modal-close { background: none !important; border: none !important; font-size: 1.8rem !important; color: #9ca3af !important; cursor: pointer !important; }
+.maktub-modal-close { background: none !important; border: none !important; font-size: 1.8rem !important; color: #9ca3af !important; cursor: pointer !important; }
 
 .maktub-modal-body { flex: 1 !important; overflow-y: auto !important; padding: 0 !important; position: relative !important; }
 
-/* INVENTORY SCROLL BAR v1.3.46 */
+/* INVENTORY SCROLL BAR */
 .maktub-inventory-scroll {
     display: flex !important;
     overflow-x: auto !important;
@@ -71,21 +76,21 @@
 }
 
 .maktub-inventory-tag.is-available {
-    background: #10b981 !important;
+    background: var(--maktub-green) !important;
     color: #fff !important;
 }
 
 .maktub-inventory-tag.is-unavailable {
-    background: #ef4444 !important;
+    background: var(--maktub-red) !important;
     color: #fff !important;
-    animation: pulse-red 2s infinite;
 }
 
-@keyframes pulse-red {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
-}
+/* Modal Buttons v1.3.47 */
+.maktub-btn-success { background: var(--maktub-green) !important; }
+.maktub-btn-success:hover { background: #044d39 !important; }
+
+.maktub-btn-danger { background: var(--maktub-red) !important; }
+.maktub-btn-danger:hover { background: #d93a3a !important; }
 
 /* Grid and List */
 .maktub-grid { display: grid; grid-template-columns: repeat(3, 1fr) !important; gap: 1rem !important; padding: 1.5rem !important; }
@@ -102,15 +107,14 @@
 
 /* List Items */
 .maktub-list-item { display: flex !important; align-items: center !important; justify-content: space-between !important; background: #fff !important; border-radius: 12px !important; border-left: 7px solid var(--maktub-coral) !important; border-bottom: 1px solid #f1f1f1 !important; margin-bottom: 1.25rem !important; padding: 0 1.25rem !important; height: 85px !important; box-shadow: 0 3px 10px rgba(0,0,0,0.03) !important; }
-.maktub-list-item.is-inactive { background-color: rgba(239, 68, 68, 0.20) !important; border-left-color: #ef4444 !important; }
+.maktub-list-item.is-inactive { background-color: rgba(239, 68, 68, 0.20) !important; border-left-color: var(--maktub-red) !important; }
 
 .b-gold { border-left-color: var(--maktub-gold) !important; }
 .b-hotdog { border-left-color: var(--maktub-hotdog) !important; }
 .b-bege { border-left-color: var(--maktub-bege) !important; }
-/* rest beverages can stay same */
 
 /* Form Elements */
-.maktub-toast { position: fixed !important; top: 30px !important; left: 50% !important; transform: translateX(-50%) translateY(-150%) !important; background: #10b981 !important; color: #fff !important; padding: 12px 24px !important; border-radius: 50px !important; font-weight: 700 !important; z-index: 2000005 !important; transition: all 0.4s !important; }
+.maktub-toast { position: fixed !important; top: 30px !important; left: 50% !important; transform: translateX(-50%) translateY(-150%) !important; background: var(--maktub-green) !important; color: #fff !important; padding: 12px 24px !important; border-radius: 50px !important; font-weight: 700 !important; z-index: 2000005 !important; transition: all 0.4s !important; }
 .maktub-toast.is-active { transform: translateX(-50%) translateY(0) !important; opacity: 1 !important; }
 #maktub-edit-form { padding: 1.5rem !important; }
 .maktub-field-group { position: relative !important; margin-bottom: 2.5rem !important; }
@@ -120,6 +124,9 @@
 .maktub-toggle-checkbox { display: none !important; }
 .maktub-toggle-label { width: 50px !important; height: 26px !important; background: #ccc !important; border-radius: 15px !important; cursor: pointer !important; position: relative !important; }
 .maktub-toggle-label::after { content: '' !important; position: absolute !important; top: 3px !important; left: 3px !important; width: 20px !important; height: 20px !important; background: #fff !important; border-radius: 50% !important; transition: 0.3s !important; }
-.maktub-toggle-checkbox:checked + .maktub-toggle-label { background-color: #10b981 !important; }
+.maktub-toggle-checkbox:checked + .maktub-toggle-label { background-color: var(--maktub-green) !important; }
 .maktub-toggle-checkbox:checked + .maktub-toggle-label::after { left: 27px !important; }
+#maktub-status-text { font-weight: 700 !important; }
+.status-is-ativo { color: var(--maktub-green) !important; }
+.status-is-inativo { color: var(--maktub-red) !important; }
 #maktub-edit-form .maktub-btn-primary { background-color: var(--maktub-orange) !important; color: #fff !important; border: none !important; border-radius: 12px !important; padding: 1.1rem 2rem !important; font-weight: 700 !important; width: 100% !important; }

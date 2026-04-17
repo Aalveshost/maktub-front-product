@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.12 - COLORED SECTIONS */
+/* Maktub Front Product Manager Styles v1.3.43 - RELATIVE TRIGGERS */
 
 :root {
     --maktub-orange: #F05828;
@@ -39,7 +39,7 @@
 }
 
 /* Base UI */
-.maktub-triggers-wrapper { position: fixed !important; bottom: 30px !important; right: 30px !important; display: flex !important; flex-direction: column !important; gap: 12px !important; z-index: 999999 !important; }
+.maktub-triggers-wrapper { display: inline-flex !important; flex-direction: column !important; gap: 12px !important; margin: 10px 0 !important; }
 .maktub-dashboard-trigger { width: 60px !important; height: 60px !important; border-radius: 60px !important; border: none !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; color: #fff !important; }
 .maktub-trigger-classic { background-color: #3b82f6 !important; }
 .maktub-trigger-grid { background-color: var(--maktub-orange) !important; }

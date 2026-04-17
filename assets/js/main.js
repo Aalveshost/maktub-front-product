@@ -5,6 +5,9 @@
         allProducts: [],
         categories: [],
         currentMode: 'classic', 
+        isBatchMode: false,
+        currentBatchCategory: null,
+
         init: function() {
             this.cacheDOM();
             this.createToastElement();
@@ -38,9 +41,9 @@
             this.$toast = $('#maktub-toast');
         },
 
-        showToast: function(message) {
+        showToast: function(message, type = 'success') {
             const self = this;
-            this.$toast.text(message).addClass('is-active');
+            this.$toast.text(message).css('background', type === 'success' ? '#10b981' : '#f05828').addClass('is-active');
             setTimeout(function() { self.$toast.removeClass('is-active'); }, 1500);
         },
 
@@ -60,7 +63,22 @@
                 else { $('.maktub-cat-card').removeClass('is-active'); $(this).addClass('is-active'); self.renderList(slug); }
             });
 
-            $(document).on('click', '.maktub-btn-edit', function(e) { e.preventDefault(); const productId = $(this).data('product-id'); if (productId) self.openEditModal(productId); });
+            $(document).on('click', '.maktub-btn-edit', function(e) {
+                e.preventDefault();
+                const productId = $(this).data('product-id');
+                const batchCat = $(this).data('batch-category'); // v1.3.19
+                
+                if (batchCat) {
+                    self.isBatchMode = true;
+                    self.currentBatchCategory = batchCat;
+                    self.openEditModal(productId, true);
+                } else {
+                    self.isBatchMode = false;
+                    self.currentBatchCategory = null;
+                    if (productId) self.openEditModal(productId);
+                }
+            });
+
             $(document).on('click', '.maktub-modal-close', function(e) { e.stopPropagation(); $(this).closest('.maktub-modal').removeClass('is-active').hide(); });
 
             this.$priceInput.on('input', function() {
@@ -160,7 +178,9 @@
         renderList: function(categorySlug) {
             const self = this;
             let html = '';
-            const filteredProducts = this.allProducts.filter(p => p.title && !p.title.toLowerCase().includes('mini'));
+            
+            // FILTRO GLOBAL v1.3.19
+            const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
 
             if (categorySlug === 'bebidas') {
                 const beverageMap = [
@@ -177,12 +197,15 @@
                     }
                 });
             } else if (categorySlug === 'porcoes') {
+                // MASTER ITEM REDESIGN v1.3.19
                 const pasteisItems = filteredProducts.filter(p => p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
                 const generalItems = filteredProducts.filter(p => p.cat === 'porcoes').sort((a,b) => a.title.localeCompare(b.title));
                 
                 if (pasteisItems.length > 0) {
                     html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
-                    pasteisItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                    const master = pasteisItems[0];
+                    const masterCopy = { id: master.id, title: 'Todas Porções de Pastéis (Todos Sabores)', price: master.price, status: master.status, cat: master.cat };
+                    html += self.buildItemHtml(masterCopy, false, 'b-bege', 'porcoes-pasteis');
                 }
                 
                 if (generalItems.length > 0) {
@@ -208,10 +231,11 @@
             this.$list.html(html);
         },
 
-        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null) {
+        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null, batchCategory = null) {
             const statusClass = (item.status != '1') ? 'is-inactive' : '';
             const cat = item.cat || '';
             let borderClass = forceBorder || '';
+            const dataBatch = batchCategory ? `data-batch-category="${batchCategory}"` : '';
 
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente') borderClass = 'b-hotdog';
@@ -232,18 +256,20 @@
                         <div class="maktub-item-price">${this.formatPrice(item.price)}</div>
                     </div>
                     <div class="maktub-item-actions">
-                        <button class="maktub-btn-edit" data-product-id="${item.id}">Editar</button>
+                        <button class="maktub-btn-edit" data-product-id="${item.id}" ${dataBatch}>Editar</button>
                     </div>
                 </div>
             `;
         },
 
-        openEditModal: function(productId) {
+        openEditModal: function(productId, isBatch = false) {
             const self = this;
             this.$editModal.addClass('is-active').show();
             this.$form.hide();
             this.$loader.show();
             this.$productIdInput.val(productId);
+            this.isBatchMode = isBatch;
+
             $.ajax({
                 url: `${maktubData.restUrl}/product/${productId}`,
                 method: 'GET',
@@ -251,13 +277,14 @@
                 success: function(response) {
                     self.$loader.hide();
                     self.$form.show();
-                    self.$modalTitle.text(response.title);
+                    const titlePrefix = self.isBatchMode ? '[LOTE] ' : '';
+                    self.$modalTitle.text(titlePrefix + (response.title || 'Produto'));
                     let p = response.preco || '0';
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
                     const isActive = (response.status == '1');
                     self.$statusToggle.prop('checked', isActive).trigger('change');
-                    self.$descInput.val(response.descricao);
+                    self.$descInput.val(response.descricao || '');
                 }
             });
         },
@@ -268,21 +295,50 @@
             let cleanPrice = this.$priceInput.val().replace(',', '.');
             const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
             const data = { preco: cleanPrice, status: statusVal, descricao: this.$descInput.val() };
+            
             this.$submitBtn.prop('disabled', true).text('Salvando...');
-            $.ajax({
-                url: `${maktubData.restUrl}/product/${productId}`,
-                method: 'POST',
-                data: data,
-                beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
-                success: function(response) {
-                    self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
-                    self.showToast(maktubData.i18n.success);
-                    self.$editModal.removeClass('is-active').hide();
-                    const activeCat = $('.maktub-cat-card.is-active').data('slug') || 'all';
-                    self.refreshData(activeCat);
-                },
-                error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast(maktubData.i18n.error); }
-            });
+
+            if (this.isBatchMode) {
+                // SEQUENTIAL UPDATE LOGIC (SAFE) v1.3.19
+                const targets = this.allProducts.filter(p => p.cat === this.currentBatchCategory && !p.title.toLowerCase().includes('mini'));
+                let count = 0;
+                let fail = false;
+
+                const updateNext = () => {
+                    if (count >= targets.length) {
+                        self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
+                        self.showToast(`Atualizados ${count} itens com sucesso!`);
+                        self.$editModal.removeClass('is-active').hide();
+                        self.refreshData($('.maktub-cat-card.is-active').data('slug') || 'all');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: `${maktubData.restUrl}/product/${targets[count].id}`,
+                        method: 'POST',
+                        data: data,
+                        beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
+                        success: function() { count++; updateNext(); },
+                        error: function() { fail = true; count++; updateNext(); }
+                    });
+                };
+                updateNext();
+            } else {
+                // SINGLE UPDATE
+                $.ajax({
+                    url: `${maktubData.restUrl}/product/${productId}`,
+                    method: 'POST',
+                    data: data,
+                    beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
+                    success: function(response) {
+                        self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save);
+                        self.showToast(maktubData.i18n.success);
+                        self.$editModal.removeClass('is-active').hide();
+                        self.refreshData($('.maktub-cat-card.is-active').data('slug') || 'all');
+                    },
+                    error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast(maktubData.i18n.error, 'error'); }
+                });
+            }
         },
 
         refreshData: function(activeCat) {

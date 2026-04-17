@@ -8,6 +8,7 @@
         isBatchMode: false,
         currentBatchCategory: null,
         currentCategory: 'all',
+        statusChangedInModal: false,
 
         init: function() {
             this.cacheDOM();
@@ -96,6 +97,7 @@
                 self.$statusText.text(isChecked ? 'Ativo' : 'Inativo');
                 self.$statusText.removeClass('status-is-ativo status-is-inativo');
                 self.$statusText.addClass(isChecked ? 'status-is-ativo' : 'status-is-inativo');
+                self.statusChangedInModal = true;
             });
 
             this.$form.on('submit', function(e) { e.preventDefault(); self.saveData(); });
@@ -182,7 +184,6 @@
             this.currentCategory = categorySlug;
             let html = '';
             
-            // GLOBAL MINI FILTER v1.3.26
             const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
 
             if (categorySlug === 'bebidas') {
@@ -205,8 +206,10 @@
                 
                 if (pasteisItems.length > 0) {
                     html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
+                    // Check if any in group is active to set Master status
+                    const isAnyActive = pasteisItems.some(item => item.status == '1');
                     const master = pasteisItems[0];
-                    const masterCopy = { id: master.id, title: 'Todas Porções de Pastéis (Vários Sabores)', price: master.price, status: master.status, cat: master.cat };
+                    const masterCopy = { id: master.id, title: 'Todas Porções de Pastéis (Vários Sabores)', price: master.price, status: isAnyActive ? '1' : '0', cat: master.cat };
                     html += self.buildItemHtml(masterCopy, false, 'b-bege', 'porcoes-pasteis');
                 }
                 
@@ -271,6 +274,7 @@
             this.$loader.show();
             this.$productIdInput.val(productId);
             this.isBatchMode = isBatch;
+            this.statusChangedInModal = false; // Reset modification flag
 
             $.ajax({
                 url: `${maktubData.restUrl}/product/${productId}`,
@@ -284,9 +288,20 @@
                     let p = response.preco || '0';
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
-                    const isActive = (response.status == '1');
-                    self.$statusToggle.prop('checked', isActive).trigger('change');
+                    
+                    // INITIAL STATUS DETECTION
+                    let isActive = (response.status == '1');
+                    if (self.isBatchMode) {
+                        const targets = self.allProducts.filter(p => p.cat === self.currentBatchCategory && !p.title.toLowerCase().includes('mini'));
+                        isActive = targets.some(item => item.status == '1'); // If any is active, show as active
+                    }
+                    
+                    self.$statusToggle.prop('checked', isActive);
+                    self.$statusText.text(isActive ? 'Ativo' : 'Inativo');
+                    self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isActive ? 'status-is-ativo' : 'status-is-inativo');
+                    
                     self.$descInput.val(response.descricao || '');
+                    self.statusChangedInModal = false; // Reset again to avoid triggering from initialization
                 }
             });
         },
@@ -296,7 +311,12 @@
             const productId = this.$productIdInput.val();
             let cleanPrice = this.$priceInput.val().replace(',', '.');
             const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
-            const data = { preco: cleanPrice, status: statusVal, descricao: this.$descInput.val() };
+            
+            const data = { preco: cleanPrice, descricao: this.$descInput.val() };
+            // ONLY SEND STATUS IF INDIVIDUAL OR IF EXPLICITLY CHANGED IN BATCH
+            if (!this.isBatchMode || this.statusChangedInModal) {
+                data.status = statusVal;
+            }
             
             this.$submitBtn.prop('disabled', true).text('Salvando...');
 

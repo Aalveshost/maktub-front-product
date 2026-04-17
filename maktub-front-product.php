@@ -3,10 +3,12 @@
  * Plugin Name: Maktub Front Product Manager
  * Plugin URI: https://github.com/Aalveshost/maktub-front-product
  * Description: Interface premium para edição de produtos (Preço e Status) no frontend. Integrado com Jet Engine e WooCommerce.
- * Version: 1.3.30
+ * Version: 1.3.31
  * Author: Antigravity AI
  * Author URI: https://google.com
  * Text Domain: maktub-front
+ * GitHub Plugin URI: https://github.com/Aalveshost/maktub-front-product
+ * Primary Branch: main
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -30,7 +32,7 @@ final class Maktub_Front_Product {
 	}
 
 	private function define_constants() {
-		define( 'MAKTUB_FRONT_VERSION', '1.3.30' );
+		define( 'MAKTUB_FRONT_VERSION', '1.3.31' );
 		define( 'MAKTUB_FRONT_PATH', plugin_dir_path( __FILE__ ) );
 		define( 'MAKTUB_FRONT_URL', plugin_dir_url( __FILE__ ) );
 	}

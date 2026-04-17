@@ -5,6 +5,9 @@
         allProducts: [],
         categories: [],
         currentMode: 'classic', 
+        isBatchMode: false,
+        currentBatchCategory: null,
+
         init: function() {
             this.cacheDOM();
             this.createToastElement();
@@ -60,7 +63,21 @@
                 else { $('.maktub-cat-card').removeClass('is-active'); $(this).addClass('is-active'); self.renderList(slug); }
             });
 
-            $(document).on('click', '.maktub-btn-edit', function(e) { e.preventDefault(); const productId = $(this).data('product-id'); if (productId) self.openEditModal(productId); });
+            $(document).on('click', '.maktub-btn-edit', function(e) {
+                e.preventDefault();
+                const productId = $(this).data('product-id');
+                const batchCat = $(this).data('batch-category'); // v1.3.16
+                if (batchCat) {
+                    self.isBatchMode = true;
+                    self.currentBatchCategory = batchCat;
+                    self.openEditModal(productId, true);
+                } else {
+                    self.isBatchMode = false;
+                    self.currentBatchCategory = null;
+                    if (productId) self.openEditModal(productId);
+                }
+            });
+
             $(document).on('click', '.maktub-modal-close', function(e) { e.stopPropagation(); $(this).closest('.maktub-modal').removeClass('is-active').hide(); });
 
             this.$priceInput.on('input', function() {
@@ -161,7 +178,6 @@
             let html = '';
             const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
 
-            // COMPOSITE GROUPS logic
             if (categorySlug === 'bebidas') {
                 const beverageMap = [
                     { slug: 'cervejas', name: 'Cervejas' }, { slug: 'agua', name: 'Água' },
@@ -177,17 +193,18 @@
                     }
                 });
             } else if (categorySlug === 'porcoes') {
-                // NESTED PORCOES v1.3.15 WITH TITLES
+                // MASTER ITEM PORCOES v1.3.16: Only show one item for Pasteis
                 const pasteisItems = filteredProducts.filter(p => p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
                 const generalItems = filteredProducts.filter(p => p.cat === 'porcoes').sort((a,b) => a.title.localeCompare(b.title));
                 
                 if (pasteisItems.length > 0) {
                     html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
-                    pasteisItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                    const masterItem = {...pasteisItems[0], title: 'Todas Porções de Pastéis (Vários Sabores)'};
+                    html += self.buildItemHtml(masterItem, false, 'b-bege', 'porcoes-pasteis');
                 }
                 
                 if (generalItems.length > 0) {
-                    html += '<h3 class="maktub-list-section-title">Porções</h3>';
+                    html += '<h3 class="maktub-list-section-title">Porções Gerais</h3>';
                     generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
                 }
                 
@@ -212,10 +229,11 @@
             this.$list.html(html);
         },
 
-        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null) {
+        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null, batchCategory = null) {
             const statusClass = (item.status != '1') ? 'is-inactive' : '';
             const cat = item.cat;
             let borderClass = forceBorder || '';
+            const dataBatch = batchCategory ? `data-batch-category="${batchCategory}"` : '';
 
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente') borderClass = 'b-hotdog';
@@ -236,18 +254,21 @@
                         <div class="maktub-item-price">${this.formatPrice(item.price)}</div>
                     </div>
                     <div class="maktub-item-actions">
-                        <button class="maktub-btn-edit" data-product-id="${item.id}">Editar</button>
+                        <button class="maktub-btn-edit" data-product-id="${item.id}" ${dataBatch}>Editar</button>
                     </div>
                 </div>
             `;
         },
 
-        openEditModal: function(productId) {
+        openEditModal: function(productId, isBatch = false) {
             const self = this;
             this.$editModal.addClass('is-active').show();
             this.$form.hide();
             this.$loader.show();
             this.$productIdInput.val(productId);
+            
+            this.isBatchMode = isBatch; // Ensure persistent batch state v1.3.16
+
             $.ajax({
                 url: `${maktubData.restUrl}/product/${productId}`,
                 method: 'GET',
@@ -255,7 +276,8 @@
                 success: function(response) {
                     self.$loader.hide();
                     self.$form.show();
-                    self.$modalTitle.text(response.title);
+                    const titlePrefix = self.isBatchMode ? '[LOTE] ' : '';
+                    self.$modalTitle.text(titlePrefix + response.title);
                     let p = response.preco || '0';
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
@@ -271,10 +293,21 @@
             const productId = this.$productIdInput.val();
             let cleanPrice = this.$priceInput.val().replace(',', '.');
             const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
+            
             const data = { preco: cleanPrice, status: statusVal, descricao: this.$descInput.val() };
+            
+            // BATCH UPDATE LOGIC v1.3.16
+            const url = this.isBatchMode 
+                        ? `${maktubData.restUrl}/batch-update` 
+                        : `${maktubData.restUrl}/product/${productId}`;
+            
+            if (this.isBatchMode) {
+                data.category = this.currentBatchCategory;
+            }
+
             this.$submitBtn.prop('disabled', true).text('Salvando...');
             $.ajax({
-                url: `${maktubData.restUrl}/product/${productId}`,
+                url: url,
                 method: 'POST',
                 data: data,
                 beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },

@@ -94,6 +94,7 @@
             const self = this;
             this.$dashModal.addClass('is-active').show();
             this.$modalBody.show();
+            
             $.when(
                 $.ajax({ url: `${maktubData.restUrl}/products`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); } }),
                 $.ajax({ url: `${maktubData.restUrl}/inventory`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); } })
@@ -136,7 +137,8 @@
         showGridOnly: function() {
             this.$btnBack.show(); this.$mainTitle.text('Escolha uma Categoria'); this.$grid.show(); this.$list.hide(); this.currentCategory = 'grid';
             let gridHtml = '';
-            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas'];
+            // LOGIC v1.3.56: Added Sorvetes
+            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas', 'sorvetes'];
             slugsToShow.forEach(slug => {
                 const cat = (slug === 'bebidas') ? { name: 'Bebidas', slug: 'bebidas' } : this.categories.find(c => c.slug === slug);
                 if (cat) {
@@ -146,6 +148,8 @@
                     else if (cat.slug.includes('hotdog') || cat.slug.includes('cachorro')) icon = '🌭';
                     else if (cat.slug.includes('porcao') || cat.slug.includes('porcoes')) icon = '🍟';
                     else if (cat.slug === 'bebidas') icon = '🥤';
+                    else if (cat.slug === 'sorvetes') icon = '🍦';
+                    
                     const stats = this.getStatsForCategory(cat.slug);
                     gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}">${stats}<div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
@@ -154,7 +158,7 @@
         },
 
         showListForCategory: function(slug) {
-            this.$mainTitle.text(slug === 'bebidas' ? 'Bebidas' : (this.categories.find(c => c.slug === slug)?.name || 'Produtos'));
+            this.$mainTitle.text(slug === 'bebidas' ? 'Bebidas' : (slug === 'sorvetes' ? 'Sorvetes' : (this.categories.find(c => c.slug === slug)?.name || 'Produtos')));
             this.$btnBack.show(); this.$grid.hide(); this.$list.show();
             this.renderList(slug);
         },
@@ -178,8 +182,9 @@
                 mainItems.forEach(item => { html += self.buildItemHtml(item); });
                 if (extraItems.length > 0) { html += '<h3 class="maktub-list-section-title">Adicionais</h3>'; extraItems.forEach(item => { html += self.buildItemHtml(item, true); }); }
             } else {
+                let border = (categorySlug === 'sorvetes') ? 'b-sorvete' : null;
                 let filtered = filteredProducts.filter(p => p.cat === categorySlug).sort((a, b) => a.title.localeCompare(b.title));
-                if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } else { filtered.forEach(item => { html += self.buildItemHtml(item); }); }
+                if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } else { filtered.forEach(item => { html += self.buildItemHtml(item, false, border); }); }
             }
             this.$list.html(html);
         },
@@ -187,11 +192,10 @@
         buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null) {
             const statusClass = (item.status != '1') ? 'is-inactive' : ''; 
             const cat = item.cat || ''; let borderClass = forceBorder || '';
-            
-            // FULL RESTORE OF LUXURY BORDERS v1.3.52
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente' || cat === 'cachorro-quente-acrescimo') borderClass = 'b-hotdog';
             else if (cat === 'porcoes' || cat === 'porcoes-pasteis') borderClass = 'b-bege';
+            else if (cat === 'sorvetes') borderClass = 'b-sorvete'; // LOGIC v1.3.56
             else if (cat === 'cervejas') borderClass = 'b-beer';
             else if (cat === 'agua') borderClass = 'b-water';
             else if (cat === 'del-valle-290ml' || cat === 'refri-600ml') borderClass = 'b-peach';
@@ -200,7 +204,6 @@
             else if (cat === 'refri-2l') borderClass = 'b-refri-2l';
             else if (cat === 'sucos-naturais') borderClass = 'b-mango';
             else if (cat === 'sucos-polpa-preco') borderClass = 'b-forest';
-
             return `
                 <div class="maktub-list-item ${statusClass} ${borderClass}">
                     <div class="maktub-item-info"><h4>${item.title || 'Sem Título'}</h4><div class="maktub-item-price">${this.formatPrice(item.price)}</div></div>

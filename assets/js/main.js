@@ -160,7 +160,9 @@
             const self = this;
             let html = '';
             
-            // COMPOSITE GROUPS logic v1.3.12
+            // CLEAN FILTER v1.3.13: Exclude items with "Mini" in title
+            const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
+
             const beverageMap = [
                 { slug: 'cervejas', name: 'Cervejas' },
                 { slug: 'agua', name: 'Água' },
@@ -175,16 +177,16 @@
 
             if (categorySlug === 'bebidas') {
                 beverageMap.forEach(bev => {
-                    const catProducts = this.allProducts.filter(p => p.cat === bev.slug).sort((a,b) => a.title.localeCompare(b.title));
+                    const catProducts = filteredProducts.filter(p => p.cat === bev.slug).sort((a,b) => a.title.localeCompare(b.title));
                     if (catProducts.length > 0) {
-                        html += `<h3 class="maktub-list-section-title">${bev.name}</h3>`; // CENTERED TITLE v1.3.12
+                        html += `<h3 class="maktub-list-section-title">${bev.name}</h3>`;
                         catProducts.forEach(item => { html += self.buildItemHtml(item); });
                     }
                 });
             } else if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce' || categorySlug === 'cachorro-quente') {
                 const compositeMap = { 'pastel-salgado': 'pastel-salgado-adicional', 'pastel-doce': 'pastel-doce-adicional', 'cachorro-quente': 'cachorro-quente-acrescimo' };
-                const mainItems = this.allProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
-                const extraItems = this.allProducts.filter(p => p.cat === compositeMap[categorySlug]).sort((a,b) => a.title.localeCompare(b.title));
+                const mainItems = filteredProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
+                const extraItems = filteredProducts.filter(p => p.cat === compositeMap[categorySlug]).sort((a,b) => a.title.localeCompare(b.title));
 
                 mainItems.forEach(item => { html += self.buildItemHtml(item); });
                 if (extraItems.length > 0) {
@@ -192,8 +194,8 @@
                     extraItems.forEach(item => { html += self.buildItemHtml(item, true); });
                 }
             } else {
-                let filtered = this.allProducts.filter(p => p.cat === categorySlug).sort((a, b) => a.title.localeCompare(b.title));
-                if (filtered.length === 0 && categorySlug === 'all') filtered = [...this.allProducts];
+                let filtered = filteredProducts.filter(p => p.cat === categorySlug).sort((a, b) => a.title.localeCompare(b.title));
+                if (filtered.length === 0 && categorySlug === 'all') filtered = [...filteredProducts];
                 if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } 
                 else { filtered.forEach(item => { html += self.buildItemHtml(item); }); }
             }

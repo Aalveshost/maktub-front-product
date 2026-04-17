@@ -25,6 +25,19 @@ class Maktub_API_Handler {
             'callback' => [ $this, 'update_product' ],
             'permission_callback' => [ $this, 'check_permission' ],
         ]);
+
+        // INVENTORY BULK ROUTES v1.3.46
+        register_rest_route( 'maktub/v2', '/inventory', [
+            'methods' => 'GET',
+            'callback' => [ $this, 'get_inventory' ],
+            'permission_callback' => '__return_true',
+        ]);
+
+        register_rest_route( 'maktub/v2', '/inventory/toggle', [
+            'methods' => 'POST',
+            'callback' => [ $this, 'toggle_ingredient' ],
+            'permission_callback' => [ $this, 'check_permission' ],
+        ]);
     }
 
     public function check_permission() {
@@ -145,5 +158,53 @@ class Maktub_API_Handler {
         clean_post_cache( $id );
         
         return [ 'success' => true ];
+    }
+
+    // INVENTORY LOGIC v1.3.46
+    public function get_inventory() {
+        $ingredients = ['atum', 'bacon', 'queijo', 'carne', 'calabresa', 'frango', 'pernil', 'costela', 'camarão'];
+        $status = get_option( 'maktub_inventory_status', [] );
+        
+        $result = [];
+        foreach($ingredients as $ing) {
+            $result[$ing] = isset($status[$ing]) ? $status[$ing] : '1'; // Default active
+        }
+        return $result;
+    }
+
+    public function toggle_ingredient( $request ) {
+        $params = $request->get_params();
+        $ing = strtolower(sanitize_text_field($params['ingredient']));
+        $new_status = $params['status']; // '1' or '0'
+        
+        // Update Options
+        $status_map = get_option( 'maktub_inventory_status', [] );
+        $status_map[$ing] = $new_status;
+        update_option( 'maktub_inventory_status', $status_map );
+
+        // Update Products
+        $args = [
+            'post_type' => 'maktub',
+            'posts_per_page' => -1,
+            'post_status' => 'publish',
+        ];
+        $posts = get_posts($args);
+        $count = 0;
+
+        foreach($posts as $post) {
+            $title = strtolower($post->post_title);
+            if (strpos($title, $ing) !== false) {
+                // Bulk Toggle Status
+                if ($new_status == '1') {
+                    update_post_meta($post->ID, 'status', ['disponivel']);
+                } else {
+                    update_post_meta($post->ID, 'status', []);
+                }
+                clean_post_cache($post->ID);
+                $count++;
+            }
+        }
+
+        return [ 'success' => true, 'count' => $count ];
     }
 }

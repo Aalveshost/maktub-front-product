@@ -32,33 +32,31 @@ class Maktub_API_Handler {
     }
 
     private function is_active( $id ) {
-        // GET ALL VALUES AS ARRAY (Safe for Checkboxes)
-        $meta_values = get_post_meta( $id, 'status', false );
+        // GET METADATA AS RAW VALUE
+        $meta = get_post_meta( $id, 'status', true );
         
-        if ( empty($meta_values) ) {
+        // Jet Engine Checkboxes: 
+        // Checked: stored as serialized array e.g. a:1:{i:0;s:10:"Disponível";} or as array
+        // Unchecked: empty string "" or empty array []
+        
+        if ( empty($meta) ) {
             return false;
         }
 
-        // Check if many values exist (unlikely but safe)
-        foreach ( $meta_values as $val ) {
-            // Jet Engine can store as serialized array in a single meta row
-            if ( is_serialized($val) ) {
-                $unserialized = @unserialize($val);
-                if ( is_array($unserialized) && in_array('Disponível', $unserialized) ) {
-                    return true;
-                }
-            }
-            // Or as a single string 'Disponível'
-            if ( $val === 'Disponível' || $val === '1' || $val === 'true' || $val === 'on' ) {
-                return true;
-            }
-            // Or if it's an actual array (already unserialized by WP)
-            if ( is_array($val) && in_array('Disponível', $val) ) {
-                return true;
-            }
+        if ( is_array($meta) ) {
+            // If array has items, it's active
+            return count($meta) > 0 && !empty($meta[0]);
         }
-        
-        return false;
+
+        // If string, check if it looks like serialized array
+        if ( is_serialized($meta) ) {
+            $unserialized = @unserialize($meta);
+            return is_array($unserialized) && count($unserialized) > 0 && !empty($unserialized[0]);
+        }
+
+        // Simple string check
+        $v = trim((string)$meta);
+        return ( !empty($v) && $v !== '0' && $v !== 'false' );
     }
 
     public function get_products() {
@@ -73,11 +71,10 @@ class Maktub_API_Handler {
 
         foreach ( $posts as $post ) {
             $id = $post->ID;
-            
             $price = get_post_meta( $id, 'preco', true );
             if(empty($price)) $price = get_post_meta($id, '_price', true);
             
-            // USE STRICT DETECTION BY ID
+            // LOGIC v1.3.30: Binary status detection
             $status = $this->is_active($id) ? '1' : '0';
 
             $terms = get_the_terms( $id, 'maktub-categorias' );
@@ -130,11 +127,11 @@ class Maktub_API_Handler {
 
         if ( isset( $params['status'] ) ) {
             if ( $params['status'] === 'Disponível' ) {
-                // JET ENGINE CHECKBOX FORMAT
                 update_post_meta( $id, 'status', ['Disponível'] );
             } else {
-                // RESET TO EMPTY ARRAY
-                update_post_meta( $id, 'status', [] );
+                // DELETE and UPDATE to empty to ensure binary "false"
+                delete_post_meta( $id, 'status' );
+                update_post_meta( $id, 'status', '' );
             }
         }
 

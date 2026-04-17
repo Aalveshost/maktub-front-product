@@ -31,30 +31,34 @@ class Maktub_API_Handler {
         return current_user_can( 'manage_options' ) || current_user_can( 'administrator' ) || current_user_can( 'shop_manager' );
     }
 
-    private function is_active( $value ) {
-        // CASE 1: Totally empty, null or false
-        if ( empty($value) || $value === false || $value === 'false' || $value === '0' ) {
+    private function is_active( $id ) {
+        // GET ALL VALUES AS ARRAY (Safe for Checkboxes)
+        $meta_values = get_post_meta( $id, 'status', false );
+        
+        if ( empty($meta_values) ) {
             return false;
         }
-        
-        // CASE 2: Jet Engine Checkbox (usually an array)
-        if ( is_array($value) ) {
-            // Check if 'Disponível' is explicitly present
-            return in_array('Disponível', $value, true) || in_array('1', $value) || in_array('true', $value);
-        }
-        
-        // CASE 3: String value
-        $v = trim( (string) $value );
-        
-        // Handle serialized strings that might have escaped get_post_meta deserialization
-        if ( strpos($v, 'a:') === 0 && strpos($v, '{') !== false ) {
-            $unserialized = @unserialize($v);
-            if ( is_array($unserialized) ) {
-                return in_array('Disponível', $unserialized, true);
+
+        // Check if many values exist (unlikely but safe)
+        foreach ( $meta_values as $val ) {
+            // Jet Engine can store as serialized array in a single meta row
+            if ( is_serialized($val) ) {
+                $unserialized = @unserialize($val);
+                if ( is_array($unserialized) && in_array('Disponível', $unserialized) ) {
+                    return true;
+                }
+            }
+            // Or as a single string 'Disponível'
+            if ( $val === 'Disponível' || $val === '1' || $val === 'true' || $val === 'on' ) {
+                return true;
+            }
+            // Or if it's an actual array (already unserialized by WP)
+            if ( is_array($val) && in_array('Disponível', $val) ) {
+                return true;
             }
         }
-
-        return ( $v === 'Disponível' || $v === '1' || $v === 'true' || $v === 'on' );
+        
+        return false;
     }
 
     public function get_products() {
@@ -73,9 +77,8 @@ class Maktub_API_Handler {
             $price = get_post_meta( $id, 'preco', true );
             if(empty($price)) $price = get_post_meta($id, '_price', true);
             
-            // USE STRICT DETECTION
-            $status_raw = get_post_meta( $id, 'status', true );
-            $status = $this->is_active($status_raw) ? '1' : '0';
+            // USE STRICT DETECTION BY ID
+            $status = $this->is_active($id) ? '1' : '0';
 
             $terms = get_the_terms( $id, 'maktub-categorias' );
             $cat_slug = ($terms && !is_wp_error($terms)) ? $terms[0]->slug : '';
@@ -103,8 +106,7 @@ class Maktub_API_Handler {
     public function get_product( $request ) {
         $id = $request['id'];
         $price = get_post_meta( $id, 'preco', true );
-        $status_raw = get_post_meta( $id, 'status', true );
-        $status = $this->is_active($status_raw) ? '1' : '0';
+        $status = $this->is_active($id) ? '1' : '0';
 
         return [
             'id' => $id,
@@ -127,11 +129,11 @@ class Maktub_API_Handler {
         }
 
         if ( isset( $params['status'] ) ) {
-            // Save exactly in the format Jet Engine expects for a checked/unchecked checkbox
             if ( $params['status'] === 'Disponível' ) {
+                // JET ENGINE CHECKBOX FORMAT
                 update_post_meta( $id, 'status', ['Disponível'] );
             } else {
-                // To effectively "uncheck" in Jet Engine, empty array is usually the way
+                // RESET TO EMPTY ARRAY
                 update_post_meta( $id, 'status', [] );
             }
         }

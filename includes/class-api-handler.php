@@ -8,19 +8,19 @@ class Maktub_API_Handler {
     }
 
     public function register_routes() {
-        register_rest_route( 'maktub/v1', '/products', [
+        register_rest_route( 'maktub/v2', '/products', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_products' ],
             'permission_callback' => [ $this, 'check_permission' ],
         ]);
 
-        register_rest_route( 'maktub/v1', '/product/(?P<id>\d+)', [
+        register_rest_route( 'maktub/v2', '/product/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_product' ],
             'permission_callback' => [ $this, 'check_permission' ],
         ]);
 
-        register_rest_route( 'maktub/v1', '/product/(?P<id>\d+)', [
+        register_rest_route( 'maktub/v2', '/product/(?P<id>\d+)', [
             'methods' => 'POST',
             'callback' => [ $this, 'update_product' ],
             'permission_callback' => [ $this, 'check_permission' ],

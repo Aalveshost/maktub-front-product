@@ -32,31 +32,35 @@ class Maktub_API_Handler {
     }
 
     private function is_active( $id ) {
-        // GET METADATA AS RAW VALUE
+        // Strict check based on Jet Engine meta value "disponivel"
         $meta = get_post_meta( $id, 'status', true );
         
-        // Jet Engine Checkboxes: 
-        // Checked: stored as serialized array e.g. a:1:{i:0;s:10:"Disponível";} or as array
-        // Unchecked: empty string "" or empty array []
-        
-        if ( empty($meta) ) {
+        if ( empty($meta) ) return false;
+
+        // If it's an array (standard Jet Checkbox)
+        if ( is_array($meta) ) {
+            foreach($meta as $val) {
+                $v = strtolower(trim((string)$val));
+                if ($v === 'disponivel' || $v === '1' || $v === 'true') return true;
+            }
             return false;
         }
 
-        if ( is_array($meta) ) {
-            // If array has items, it's active
-            return count($meta) > 0 && !empty($meta[0]);
-        }
-
-        // If string, check if it looks like serialized array
+        // If it's a serialized string
         if ( is_serialized($meta) ) {
             $unserialized = @unserialize($meta);
-            return is_array($unserialized) && count($unserialized) > 0 && !empty($unserialized[0]);
+            if ( is_array($unserialized) ) {
+                foreach($unserialized as $val) {
+                    $v = strtolower(trim((string)$val));
+                    if ($v === 'disponivel' || $v === '1' || $v === 'true') return true;
+                }
+            }
+            return false;
         }
 
-        // Simple string check
-        $v = trim((string)$meta);
-        return ( !empty($v) && $v !== '0' && $v !== 'false' );
+        // Simple string comparison
+        $v = strtolower(trim((string)$meta));
+        return ( $v === 'disponivel' || $v === '1' || $v === 'true' || $v === 'on' );
     }
 
     public function get_products() {
@@ -74,7 +78,7 @@ class Maktub_API_Handler {
             $price = get_post_meta( $id, 'preco', true );
             if(empty($price)) $price = get_post_meta($id, '_price', true);
             
-            // LOGIC v1.3.30: Binary status detection
+            // LOGIC v1.3.33: Checking for lowercase "disponivel"
             $status = $this->is_active($id) ? '1' : '0';
 
             $terms = get_the_terms( $id, 'maktub-categorias' );
@@ -126,12 +130,11 @@ class Maktub_API_Handler {
         }
 
         if ( isset( $params['status'] ) ) {
+            // FIX v1.3.33: IMPORTANT! Using lowercase "disponivel" to match Jet Engine settings
             if ( $params['status'] === 'Disponível' ) {
-                update_post_meta( $id, 'status', ['Disponível'] );
+                update_post_meta( $id, 'status', ['disponivel'] );
             } else {
-                // DELETE and UPDATE to empty to ensure binary "false"
-                delete_post_meta( $id, 'status' );
-                update_post_meta( $id, 'status', '' );
+                update_post_meta( $id, 'status', [] );
             }
         }
 

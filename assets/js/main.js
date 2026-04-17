@@ -66,7 +66,7 @@
             $(document).on('click', '.maktub-btn-edit', function(e) {
                 e.preventDefault();
                 const productId = $(this).data('product-id');
-                const batchCat = $(this).data('batch-category'); // v1.3.16
+                const batchCat = $(this).data('batch-category');
                 if (batchCat) {
                     self.isBatchMode = true;
                     self.currentBatchCategory = batchCat;
@@ -114,10 +114,11 @@
                 method: 'GET',
                 beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
                 success: function(response) {
-                    self.allProducts = response.products;
-                    self.categories = response.categories;
+                    self.allProducts = response.products || [];
+                    self.categories = response.categories || [];
                     if (self.currentMode === 'grid') self.showGridOnly(); else self.showClassicView();
-                }
+                },
+                error: function() { self.$modalBody.html('<p style="padding: 2rem; text-align: center;">Erro ao carregar dados.</p>'); }
             });
         },
 
@@ -126,21 +127,32 @@
             this.$mainTitle.text('Escolha uma Categoria');
             this.$grid.show();
             this.$list.hide();
+            this.$loader.hide(); 
+            
             let gridHtml = '';
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas'];
+            
             slugsToShow.forEach(slug => {
-                const cat = (slug === 'bebidas') ? { name: 'Bebidas', slug: 'bebidas' } : this.categories.find(c => c.slug === slug);
-                if (cat || slug === 'bebidas') {
+                let cat = null;
+                if (slug === 'bebidas') {
+                    cat = { name: 'Bebidas', slug: 'bebidas' };
+                } else {
+                    cat = this.categories.find(c => c.slug === slug);
+                }
+
+                if (cat) {
                     let icon = '🥟';
-                    if (slug.includes('doce')) icon = '🍩';
-                    if (slug.includes('especial')) icon = '🌟';
-                    if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
-                    if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
-                    if (slug === 'bebidas') icon = '🥤';
+                    const s = cat.slug;
+                    if (s.includes('doce')) icon = '🍩';
+                    else if (s.includes('especial')) icon = '🌟';
+                    else if (s.includes('hotdog') || s.includes('cachorro')) icon = '🌭';
+                    else if (s.includes('porcao') || s.includes('porcoes')) icon = '🍟';
+                    else if (s === 'bebidas') icon = '🥤';
+                    
                     gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
             });
-            this.$grid.html(gridHtml);
+            this.$grid.html(gridHtml || '<p style="padding: 2rem;">Vazio.</p>');
         },
 
         showClassicView: function() {
@@ -148,18 +160,20 @@
             this.$mainTitle.text('Gerenciar Maktub');
             this.$grid.show(); 
             this.$list.show(); 
+            this.$loader.hide();
+
             let gridHtml = `<div class="maktub-cat-card" data-slug="all"><div class="maktub-cat-img">🏠</div><h5>Todos</h5></div>`;
             this.categories.forEach(cat => {
                 let icon = '📦';
                 const slug = cat.slug.toLowerCase();
                 if (slug.includes('pastel')) icon = '🥟';
-                if (slug.includes('bebida') || slug.includes('refri') || slug.includes('cerveja')) icon = '🥤';
-                if (slug.includes('doce')) icon = '🍩';
-                if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
-                if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
-                if (slug.includes('adicional') || slug.includes('acrescimo')) icon = '✨';
-                const isActive = (slug === 'pastel-salgado') ? 'is-active' : '';
-                gridHtml += `<div class="maktub-cat-card ${isActive}" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
+                else if (slug.includes('bebida') || slug.includes('refri') || slug.includes('cerveja')) icon = '🥤';
+                else if (slug.includes('doce')) icon = '🍩';
+                else if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
+                else if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
+                else if (slug.includes('adicional') || slug.includes('acrescimo')) icon = '✨';
+                
+                gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
             });
             this.$grid.html(gridHtml);
             this.renderList('pastel-salgado');
@@ -169,14 +183,20 @@
             this.$mainTitle.text(slug === 'bebidas' ? 'Bebidas' : (this.categories.find(c => c.slug === slug)?.name || 'Produtos'));
             this.$btnBack.show();
             this.$grid.hide();
-            this.$list.show();
+            this.$list.show().empty().html('<div style="padding: 2rem; text-align: center;">Carregando...</div>');
             this.renderList(slug);
         },
 
         renderList: function(categorySlug) {
             const self = this;
             let html = '';
-            const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
+            
+            if (!this.allProducts || this.allProducts.length === 0) {
+                this.$list.html('<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>');
+                return;
+            }
+
+            const filteredProducts = this.allProducts.filter(p => p.title && !p.title.toLowerCase().includes('mini'));
 
             if (categorySlug === 'bebidas') {
                 const beverageMap = [
@@ -193,23 +213,21 @@
                     }
                 });
             } else if (categorySlug === 'porcoes') {
-                // MASTER ITEM PORCOES v1.3.16: Only show one item for Pasteis
                 const pasteisItems = filteredProducts.filter(p => p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
                 const generalItems = filteredProducts.filter(p => p.cat === 'porcoes').sort((a,b) => a.title.localeCompare(b.title));
                 
                 if (pasteisItems.length > 0) {
                     html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
-                    const masterItem = {...pasteisItems[0], title: 'Todas Porções de Pastéis (Vários Sabores)'};
-                    html += self.buildItemHtml(masterItem, false, 'b-bege', 'porcoes-pasteis');
+                    // SAFETY v1.3.17: Copy properties carefully
+                    const master = pasteisItems[0];
+                    const masterCopy = { id: master.id, title: 'Todas Porções de Pastéis (Vários Sabores)', price: master.price, status: master.status, cat: master.cat };
+                    html += self.buildItemHtml(masterCopy, false, 'b-bege', 'porcoes-pasteis');
                 }
                 
                 if (generalItems.length > 0) {
                     html += '<h3 class="maktub-list-section-title">Porções Gerais</h3>';
                     generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
                 }
-                
-                if (html === '') html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>';
-
             } else if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce' || categorySlug === 'cachorro-quente') {
                 const mainItems = filteredProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
                 const extraSlug = (categorySlug === 'pastel-salgado') ? 'pastel-salgado-adicional' : (categorySlug === 'pastel-doce' ? 'pastel-doce-adicional' : 'cachorro-quente-acrescimo');
@@ -226,12 +244,12 @@
                 if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } 
                 else { filtered.forEach(item => { html += self.buildItemHtml(item); }); }
             }
-            this.$list.html(html);
+            this.$list.html(html || '<p style="padding: 2rem; text-align: center;">Nenhum item disponível.</p>');
         },
 
         buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null, batchCategory = null) {
             const statusClass = (item.status != '1') ? 'is-inactive' : '';
-            const cat = item.cat;
+            const cat = item.cat || '';
             let borderClass = forceBorder || '';
             const dataBatch = batchCategory ? `data-batch-category="${batchCategory}"` : '';
 
@@ -250,7 +268,7 @@
             return `
                 <div class="maktub-list-item ${statusClass} ${borderClass}">
                     <div class="maktub-item-info">
-                        <h4>${item.title}</h4>
+                        <h4>${item.title || 'Sem Título'}</h4>
                         <div class="maktub-item-price">${this.formatPrice(item.price)}</div>
                     </div>
                     <div class="maktub-item-actions">
@@ -266,8 +284,7 @@
             this.$form.hide();
             this.$loader.show();
             this.$productIdInput.val(productId);
-            
-            this.isBatchMode = isBatch; // Ensure persistent batch state v1.3.16
+            this.isBatchMode = isBatch;
 
             $.ajax({
                 url: `${maktubData.restUrl}/product/${productId}`,
@@ -277,13 +294,13 @@
                     self.$loader.hide();
                     self.$form.show();
                     const titlePrefix = self.isBatchMode ? '[LOTE] ' : '';
-                    self.$modalTitle.text(titlePrefix + response.title);
+                    self.$modalTitle.text(titlePrefix + (response.title || 'Produto'));
                     let p = response.preco || '0';
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
                     const isActive = (response.status == '1');
                     self.$statusToggle.prop('checked', isActive).trigger('change');
-                    self.$descInput.val(response.descricao);
+                    self.$descInput.val(response.descricao || '');
                 }
             });
         },
@@ -293,17 +310,10 @@
             const productId = this.$productIdInput.val();
             let cleanPrice = this.$priceInput.val().replace(',', '.');
             const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
-            
             const data = { preco: cleanPrice, status: statusVal, descricao: this.$descInput.val() };
             
-            // BATCH UPDATE LOGIC v1.3.16
-            const url = this.isBatchMode 
-                        ? `${maktubData.restUrl}/batch-update` 
-                        : `${maktubData.restUrl}/product/${productId}`;
-            
-            if (this.isBatchMode) {
-                data.category = this.currentBatchCategory;
-            }
+            const url = this.isBatchMode ? `${maktubData.restUrl}/batch-update` : `${maktubData.restUrl}/product/${productId}`;
+            if (this.isBatchMode) data.category = this.currentBatchCategory;
 
             this.$submitBtn.prop('disabled', true).text('Salvando...');
             $.ajax({
@@ -328,7 +338,7 @@
                 url: `${maktubData.restUrl}/products`,
                 method: 'GET',
                 beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
-                success: function(response) { self.allProducts = response.products; self.renderList(activeCat); }
+                success: function(response) { self.allProducts = response.products || []; self.renderList(activeCat); }
             });
         }
     };

@@ -65,41 +65,11 @@
                 else { $('.maktub-cat-card').removeClass('is-active'); $(this).addClass('is-active'); self.renderList(slug); }
             });
 
-            $(document).on('click', '.maktub-btn-edit', function(e) {
-                e.preventDefault();
-                const productId = $(this).data('product-id');
-                const batchCat = $(this).data('batch-category');
-                
-                if (batchCat) {
-                    self.isBatchMode = true;
-                    self.currentBatchCategory = batchCat;
-                    self.openEditModal(productId, true);
-                } else {
-                    self.isBatchMode = false;
-                    self.currentBatchCategory = null;
-                    if (productId) self.openEditModal(productId);
-                }
-            });
-
+            $(document).on('click', '.maktub-btn-edit', function(e) { e.preventDefault(); const productId = $(this).data('product-id'); const batchCat = $(this).data('batch-category'); if (batchCat) { self.isBatchMode = true; self.currentBatchCategory = batchCat; self.openEditModal(productId, true); } else { self.isBatchMode = false; self.currentBatchCategory = null; if (productId) self.openEditModal(productId); } });
             $(document).on('click', '.maktub-modal-close', function(e) { e.stopPropagation(); $(this).closest('.maktub-modal').removeClass('is-active').hide(); });
 
-            this.$priceInput.on('input', function() {
-                let v = $(this).val().replace(/\D/g, ''); 
-                if (v.length > 5) v = v.substring(0, 5); 
-                if (parseInt(v) > 99900) v = '99900';
-                if (v === '') { $(this).val(''); return; }
-                v = (parseInt(v) / 100).toFixed(2).replace('.', ',');
-                $(this).val(v);
-            });
-
-            this.$statusToggle.on('change', function() {
-                const isChecked = $(this).is(':checked');
-                self.$statusText.text(isChecked ? 'Ativo' : 'Inativo');
-                self.$statusText.removeClass('status-is-ativo status-is-inativo');
-                self.$statusText.addClass(isChecked ? 'status-is-ativo' : 'status-is-inativo');
-                self.statusChangedInModal = true;
-            });
-
+            this.$priceInput.on('input', function() { let v = $(this).val().replace(/\D/g, ''); if (v.length > 5) v = v.substring(0, 5); if (parseInt(v) > 99900) v = '99900'; if (v === '') { $(this).val(''); return; } v = (parseInt(v) / 100).toFixed(2).replace('.', ','); $(this).val(v); });
+            this.$statusToggle.on('change', function() { const isChecked = $(this).is(':checked'); self.$statusText.text(isChecked ? 'Ativo' : 'Inativo'); self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isChecked ? 'status-is-ativo' : 'status-is-inativo'); self.statusChangedInModal = true; });
             this.$form.on('submit', function(e) { e.preventDefault(); self.saveData(); });
         },
 
@@ -126,6 +96,25 @@
             });
         },
 
+        // LOGIC v1.3.45: Calculate Stats
+        getStatsForCategory: function(slug) {
+            const filtered = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
+            let targetProducts = [];
+            
+            if (slug === 'bebidas') {
+                const bevSlugs = ['cervejas', 'agua', 'del-valle-290ml', 'refri-lata-350ml', 'refri-500ml', 'refri-600ml', 'refri-2l', 'sucos-naturais', 'sucos-polpa-preco'];
+                targetProducts = filtered.filter(p => bevSlugs.includes(p.cat));
+            } else if (slug === 'porcoes') {
+                targetProducts = filtered.filter(p => p.cat === 'porcoes' || p.cat === 'porcoes-pasteis');
+            } else {
+                targetProducts = filtered.filter(p => p.cat === slug);
+            }
+
+            const total = targetProducts.length;
+            const active = targetProducts.filter(p => p.status == '1').length;
+            return total > 0 ? `<span class="maktub-cat-badge">${active}/${total}</span>` : '';
+        },
+
         showGridOnly: function() {
             this.$btnBack.show();
             this.$mainTitle.text('Escolha uma Categoria');
@@ -143,7 +132,9 @@
                     else if (cat.slug.includes('hotdog') || cat.slug.includes('cachorro')) icon = '🌭';
                     else if (cat.slug.includes('porcao') || cat.slug.includes('porcoes')) icon = '🍟';
                     else if (cat.slug === 'bebidas') icon = '🥤';
-                    gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
+                    
+                    const stats = this.getStatsForCategory(cat.slug);
+                    gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}">${stats}<div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
             });
             this.$grid.html(gridHtml);
@@ -164,8 +155,10 @@
                 else if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
                 else if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
                 else if (slug.includes('adicional') || slug.includes('acrescimo')) icon = '✨';
+                
+                const stats = this.getStatsForCategory(cat.slug);
                 const isActive = (slug === 'pastel-salgado') ? 'is-active' : '';
-                gridHtml += `<div class="maktub-cat-card ${isActive}" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
+                gridHtml += `<div class="maktub-cat-card ${isActive}" data-slug="${cat.slug}">${stats}<div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
             });
             this.$grid.html(gridHtml);
             this.renderList('pastel-salgado');
@@ -206,7 +199,6 @@
                 
                 if (pasteisItems.length > 0) {
                     html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
-                    // Check if any in group is active to set Master status
                     const isAnyActive = pasteisItems.some(item => item.status == '1');
                     const master = pasteisItems[0];
                     const masterCopy = { id: master.id, title: 'Todas Porções de Pastéis (Vários Sabores)', price: master.price, status: isAnyActive ? '1' : '0', cat: master.cat };
@@ -243,7 +235,7 @@
             const dataBatch = batchCategory ? `data-batch-category="${batchCategory}"` : '';
 
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
-            else if (cat === 'cachorro-quente') borderClass = 'b-hotdog';
+            else if (cat === 'cachorro-quente' || cat === 'cachorro-quente-acrescimo') borderClass = 'b-hotdog';
             else if (cat === 'porcoes' || cat === 'porcoes-pasteis') borderClass = 'b-bege';
             else if (cat === 'cervejas') borderClass = 'b-beer';
             else if (cat === 'agua') borderClass = 'b-water';
@@ -274,7 +266,7 @@
             this.$loader.show();
             this.$productIdInput.val(productId);
             this.isBatchMode = isBatch;
-            this.statusChangedInModal = false; // Reset modification flag
+            this.statusChangedInModal = false;
 
             $.ajax({
                 url: `${maktubData.restUrl}/product/${productId}`,
@@ -289,19 +281,18 @@
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
                     
-                    // INITIAL STATUS DETECTION
                     let isActive = (response.status == '1');
                     if (self.isBatchMode) {
                         const targets = self.allProducts.filter(p => p.cat === self.currentBatchCategory && !p.title.toLowerCase().includes('mini'));
-                        isActive = targets.some(item => item.status == '1'); // If any is active, show as active
+                        isActive = targets.some(item => item.status == '1');
                     }
                     
                     self.$statusToggle.prop('checked', isActive);
                     self.$statusText.text(isActive ? 'Ativo' : 'Inativo');
-                    self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isActive ? 'status-is-ativo' : 'status-is-inativo');
+                    self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isChecked ? 'status-is-ativo' : 'status-is-inativo');
                     
                     self.$descInput.val(response.descricao || '');
-                    self.statusChangedInModal = false; // Reset again to avoid triggering from initialization
+                    self.statusChangedInModal = false;
                 }
             });
         },
@@ -313,7 +304,6 @@
             const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
             
             const data = { preco: cleanPrice, descricao: this.$descInput.val() };
-            // ONLY SEND STATUS IF INDIVIDUAL OR IF EXPLICITLY CHANGED IN BATCH
             if (!this.isBatchMode || this.statusChangedInModal) {
                 data.status = statusVal;
             }
@@ -321,7 +311,7 @@
             this.$submitBtn.prop('disabled', true).text('Salvando...');
 
             if (this.isBatchMode) {
-                const targets = this.allProducts.filter(p => p.cat === this.currentBatchCategory && !p.title.toLowerCase().includes('mini'));
+                const targets = self.allProducts.filter(p => p.cat === self.currentBatchCategory && !p.title.toLowerCase().includes('mini'));
                 let count = 0;
                 
                 const updateNext = () => {

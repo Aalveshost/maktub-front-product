@@ -32,15 +32,28 @@ class Maktub_API_Handler {
     }
 
     private function is_active( $value ) {
-        if ( empty($value) ) return false;
-        
-        // Handle Jet Engine checkbox arrays
-        if ( is_array($value) ) {
-            return in_array('Disponível', $value) || in_array('1', $value) || in_array('true', $value);
+        // CASE 1: Totally empty, null or false
+        if ( empty($value) || $value === false || $value === 'false' || $value === '0' ) {
+            return false;
         }
         
-        // Handle strings
+        // CASE 2: Jet Engine Checkbox (usually an array)
+        if ( is_array($value) ) {
+            // Check if 'Disponível' is explicitly present
+            return in_array('Disponível', $value, true) || in_array('1', $value) || in_array('true', $value);
+        }
+        
+        // CASE 3: String value
         $v = trim( (string) $value );
+        
+        // Handle serialized strings that might have escaped get_post_meta deserialization
+        if ( strpos($v, 'a:') === 0 && strpos($v, '{') !== false ) {
+            $unserialized = @unserialize($v);
+            if ( is_array($unserialized) ) {
+                return in_array('Disponível', $unserialized, true);
+            }
+        }
+
         return ( $v === 'Disponível' || $v === '1' || $v === 'true' || $v === 'on' );
     }
 
@@ -57,10 +70,10 @@ class Maktub_API_Handler {
         foreach ( $posts as $post ) {
             $id = $post->ID;
             
-            // Jet Engine Meta
             $price = get_post_meta( $id, 'preco', true );
             if(empty($price)) $price = get_post_meta($id, '_price', true);
             
+            // USE STRICT DETECTION
             $status_raw = get_post_meta( $id, 'status', true );
             $status = $this->is_active($status_raw) ? '1' : '0';
 
@@ -114,10 +127,11 @@ class Maktub_API_Handler {
         }
 
         if ( isset( $params['status'] ) ) {
-            // FIX v1.3.25: Save as ARRAY for Jet Engine compatibility
+            // Save exactly in the format Jet Engine expects for a checked/unchecked checkbox
             if ( $params['status'] === 'Disponível' ) {
                 update_post_meta( $id, 'status', ['Disponível'] );
             } else {
+                // To effectively "uncheck" in Jet Engine, empty array is usually the way
                 update_post_meta( $id, 'status', [] );
             }
         }
@@ -126,7 +140,6 @@ class Maktub_API_Handler {
             update_post_meta( $id, 'descricao', sanitize_textarea_field( $params['descricao'] ) );
         }
 
-        // PURGE CACHE (WP & JET)
         clean_post_cache( $id );
         
         return [ 'success' => true ];

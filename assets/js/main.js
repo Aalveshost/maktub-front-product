@@ -109,17 +109,10 @@
             this.$mainTitle.text('Escolha uma Categoria');
             this.$grid.show();
             this.$list.hide();
-            
             let gridHtml = '';
-            // Consolidated Bebidas v1.3.11
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas'];
-            
             slugsToShow.forEach(slug => {
-                // If it's the virtual 'bebidas', we find the first available drink category to represent it effectively
-                const cat = (slug === 'bebidas') 
-                    ? { name: 'Bebidas', slug: 'bebidas' } 
-                    : this.categories.find(c => c.slug === slug);
-
+                const cat = (slug === 'bebidas') ? { name: 'Bebidas', slug: 'bebidas' } : this.categories.find(c => c.slug === slug);
                 if (cat || slug === 'bebidas') {
                     let icon = '🥟';
                     if (slug.includes('doce')) icon = '🍩';
@@ -127,7 +120,6 @@
                     if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
                     if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
                     if (slug === 'bebidas') icon = '🥤';
-
                     gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
             });
@@ -168,13 +160,26 @@
             const self = this;
             let html = '';
             
-            // COMPOSITE GROUPS v1.3.11
-            const beverageSlugs = ['cervejas', 'agua', 'del-valle-290ml', 'refri-lata-350ml', 'refri-500ml', 'refri-600ml', 'refri-2l', 'sucos-naturais', 'sucos-polpa-preco'];
+            // COMPOSITE GROUPS logic v1.3.12
+            const beverageMap = [
+                { slug: 'cervejas', name: 'Cervejas' },
+                { slug: 'agua', name: 'Água' },
+                { slug: 'del-valle-290ml', name: 'Dell Valle 290ml' },
+                { slug: 'refri-lata-350ml', name: 'Refri Lata 350ml' },
+                { slug: 'refri-500ml', name: 'Refri 500ml' },
+                { slug: 'refri-600ml', name: 'Refri 600ml' },
+                { slug: 'refri-2l', name: 'Refri 2L' },
+                { slug: 'sucos-naturais', name: 'Sucos Naturais' },
+                { slug: 'sucos-polpa-preco', name: 'Sucos de Polpa' }
+            ];
 
             if (categorySlug === 'bebidas') {
-                beverageSlugs.forEach(slug => {
-                    const catProducts = this.allProducts.filter(p => p.cat === slug).sort((a,b) => a.title.localeCompare(b.title));
-                    catProducts.forEach(item => { html += self.buildItemHtml(item); });
+                beverageMap.forEach(bev => {
+                    const catProducts = this.allProducts.filter(p => p.cat === bev.slug).sort((a,b) => a.title.localeCompare(b.title));
+                    if (catProducts.length > 0) {
+                        html += `<h3 class="maktub-list-section-title">${bev.name}</h3>`; // CENTERED TITLE v1.3.12
+                        catProducts.forEach(item => { html += self.buildItemHtml(item); });
+                    }
                 });
             } else if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce' || categorySlug === 'cachorro-quente') {
                 const compositeMap = { 'pastel-salgado': 'pastel-salgado-adicional', 'pastel-doce': 'pastel-doce-adicional', 'cachorro-quente': 'cachorro-quente-acrescimo' };
@@ -189,7 +194,6 @@
             } else {
                 let filtered = this.allProducts.filter(p => p.cat === categorySlug).sort((a, b) => a.title.localeCompare(b.title));
                 if (filtered.length === 0 && categorySlug === 'all') filtered = [...this.allProducts];
-                
                 if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } 
                 else { filtered.forEach(item => { html += self.buildItemHtml(item); }); }
             }
@@ -200,8 +204,6 @@
             const statusClass = (item.status != '1') ? 'is-inactive' : '';
             const cat = item.cat;
             let borderClass = '';
-
-            // Border mapping v1.3.11
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente') borderClass = 'b-hotdog';
             else if (cat === 'porcoes') borderClass = 'b-bege';
@@ -209,7 +211,7 @@
             else if (cat === 'agua') borderClass = 'b-water';
             else if (cat === 'del-valle-290ml' || cat === 'refri-600ml') borderClass = 'b-peach';
             else if (cat === 'refri-lata-350ml') borderClass = 'b-refri-lata';
-            else if (cat === 'refri-500ml') borderClass = 'b-refri-50';
+            else if (cat === 'refri-500ml') borderClass = 'b-refri-500';
             else if (cat === 'refri-2l') borderClass = 'b-refri-2l';
             else if (cat === 'sucos-naturais') borderClass = 'b-mango';
             else if (cat === 'sucos-polpa-preco') borderClass = 'b-forest';

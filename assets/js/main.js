@@ -14,7 +14,6 @@
 
         init: function() {
             this.cacheDOM();
-            this.createToastElement();
             this.bindEvents();
         },
 
@@ -39,19 +38,6 @@
             this.$submitBtn = this.$form.find('.maktub-btn-primary');
         },
 
-        createToastElement: function() {
-            if ($('#maktub-toast').length === 0) {
-                $('body').append('<div id="maktub-toast" class="maktub-toast">Atualizado com sucesso!</div>');
-            }
-            this.$toast = $('#maktub-toast');
-        },
-
-        showToast: function(message, type = 'success') {
-            const self = this;
-            this.$toast.text(message).css('background', type === 'success' ? '#065f46' : '#f05828').addClass('is-active');
-            setTimeout(function() { self.$toast.removeClass('is-active'); }, 2000);
-        },
-
         bindEvents: function() {
             const self = this;
             $(document).on('click', '.maktub-trigger-grid', function(e) { e.preventDefault(); self.currentMode = 'grid'; self.openDashboard(); });
@@ -66,12 +52,11 @@
                 if (self.currentMode === 'grid') { self.showListForCategory(slug); } 
             });
 
-            // INVENTORY MODAL TRIGGER v1.3.47
             $(document).on('click', '.maktub-inventory-tag', function() {
                 const ing = $(this).data('ingredient');
                 self.pendingIngredient = ing;
                 $('#maktub-inv-title').text('Gestão de ' + ing.toUpperCase());
-                $('#maktub-inv-desc').text(`Alterar status de todos os itens que contêm "${ing.toUpperCase()}"?`);
+                $('#maktub-inv-desc').text(`Alterar status de todos os itens com "${ing.toUpperCase()}"?`);
                 self.$invModal.addClass('is-active').show();
             });
 
@@ -89,20 +74,13 @@
         toggleInventory: function(ing, newStatus) {
             const self = this;
             this.$invModal.removeClass('is-active').hide();
-            this.showToast('Atualizando em massa...', 'info');
-            
             $.ajax({
                 url: `${maktubData.restUrl}/inventory/toggle`,
                 method: 'POST',
                 data: { ingredient: ing, status: newStatus },
                 beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
-                success: function(response) {
-                    if (response.success) {
-                        self.showToast(`Sucesso! ${response.count} itens sincronizados.`);
-                        self.openDashboard(); 
-                    }
-                },
-                error: function() { self.showToast('Erro ao atualizar estoque.', 'error'); }
+                success: function(response) { if (response.success) { self.openDashboard(); } },
+                error: function() { console.error('Error updating inventory.'); }
             });
         },
 
@@ -124,7 +102,6 @@
                 self.allProducts = res1[0].products || [];
                 self.categories = res1[0].categories || [];
                 self.inventory = res2[0];
-                
                 self.renderInventoryBar();
                 self.showGridOnly();
             });
@@ -136,6 +113,7 @@
             }
             const $bar = $('#maktub-inventory-bar');
             let html = '';
+            // Backend already sends sorted alphabetically in v1.3.50
             for (const [ing, status] of Object.entries(this.inventory)) {
                 const statusClass = status === '1' ? 'is-available' : 'is-unavailable';
                 html += `<div class="maktub-inventory-tag ${statusClass}" data-ingredient="${ing}">${ing}</div>`;
@@ -242,7 +220,7 @@
             const self = this; const productId = this.$productIdInput.val(); let cleanPrice = this.$priceInput.val().replace(',', '.'); const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
             const data = { preco: cleanPrice, descricao: this.$descInput.val(), status: statusVal };
             this.$submitBtn.prop('disabled', true).text('Salvando...');
-            $.ajax({ url: `${maktubData.restUrl}/product/${productId}`, method: 'POST', data: data, beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); }, success: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast('Atualizado!'); self.$editModal.removeClass('is-active').hide(); self.openDashboard(); }, error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.showToast('Erro ao salvar.', 'error'); } });
+            $.ajax({ url: `${maktubData.restUrl}/product/${productId}`, method: 'POST', data: data, beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); }, success: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); self.$editModal.removeClass('is-active').hide(); self.openDashboard(); }, error: function() { self.$submitBtn.prop('disabled', false).text(maktubData.i18n.save); console.error('Error saving item.'); } });
         }
     };
 

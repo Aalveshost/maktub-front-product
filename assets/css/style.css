@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-/* Maktub Front Product Manager Styles v1.3.47 - FOREST GREEN & PREMIUM MODALS */
+/* Maktub Front Product Manager Styles v1.3.50 - PUBLIC ACCESS & NO TOAST */
 
 :root {
     --maktub-orange: #F05828;
@@ -12,7 +12,7 @@
     --maktub-bg: #ffffff;
     --maktub-text: #1f2937;
     --maktub-gray: #a8a8a8;
-    --maktub-green: #065f46; /* FOREST GREEN */
+    --maktub-green: #065f46;
     --maktub-red: #ef4444;
     --maktub-font: 'Quicksand', sans-serif;
 }
@@ -85,12 +85,9 @@
     color: #fff !important;
 }
 
-/* Modal Buttons v1.3.47 */
+/* Modal Buttons */
 .maktub-btn-success { background: var(--maktub-green) !important; }
-.maktub-btn-success:hover { background: #044d39 !important; }
-
 .maktub-btn-danger { background: var(--maktub-red) !important; }
-.maktub-btn-danger:hover { background: #d93a3a !important; }
 
 /* Grid and List */
 .maktub-grid { display: grid; grid-template-columns: repeat(3, 1fr) !important; gap: 1rem !important; padding: 1.5rem !important; }
@@ -107,15 +104,15 @@
 
 /* List Items */
 .maktub-list-item { display: flex !important; align-items: center !important; justify-content: space-between !important; background: #fff !important; border-radius: 12px !important; border-left: 7px solid var(--maktub-coral) !important; border-bottom: 1px solid #f1f1f1 !important; margin-bottom: 1.25rem !important; padding: 0 1.25rem !important; height: 85px !important; box-shadow: 0 3px 10px rgba(0,0,0,0.03) !important; }
-.maktub-list-item.is-inactive { background-color: rgba(239, 68, 68, 0.20) !important; border-left-color: var(--maktub-red) !important; }
+.maktub-list-item.is-inactive { background-color: rgba(239, 68, 68, 0.15) !important; border-left-color: var(--maktub-red) !important; }
 
 .b-gold { border-left-color: var(--maktub-gold) !important; }
 .b-hotdog { border-left-color: var(--maktub-hotdog) !important; }
 .b-bege { border-left-color: var(--maktub-bege) !important; }
 
-/* Form Elements */
-.maktub-toast { position: fixed !important; top: 30px !important; left: 50% !important; transform: translateX(-50%) translateY(-150%) !important; background: var(--maktub-green) !important; color: #fff !important; padding: 12px 24px !important; border-radius: 50px !important; font-weight: 700 !important; z-index: 2000005 !important; transition: all 0.4s !important; }
-.maktub-toast.is-active { transform: translateX(-50%) translateY(0) !important; opacity: 1 !important; }
+/* DEACTIVATE TOAST v1.3.50 */
+.maktub-toast { display: none !important; }
+
 #maktub-edit-form { padding: 1.5rem !important; }
 .maktub-field-group { position: relative !important; margin-bottom: 2.5rem !important; }
 .maktub-field-group label:not(.maktub-toggle-label) { position: absolute !important; top: -11px !important; left: 14px !important; background: #fff !important; padding: 0 8px !important; font-size: 0.85rem !important; font-weight: 700 !important; color: var(--maktub-orange) !important; }

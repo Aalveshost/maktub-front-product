@@ -159,23 +159,16 @@
         renderList: function(categorySlug) {
             const self = this;
             let html = '';
-            
-            // CLEAN FILTER v1.3.13: Exclude items with "Mini" in title
             const filteredProducts = this.allProducts.filter(p => !p.title.toLowerCase().includes('mini'));
 
-            const beverageMap = [
-                { slug: 'cervejas', name: 'Cervejas' },
-                { slug: 'agua', name: 'Água' },
-                { slug: 'del-valle-290ml', name: 'Dell Valle 290ml' },
-                { slug: 'refri-lata-350ml', name: 'Refri Lata 350ml' },
-                { slug: 'refri-500ml', name: 'Refri 500ml' },
-                { slug: 'refri-600ml', name: 'Refri 600ml' },
-                { slug: 'refri-2l', name: 'Refri 2L' },
-                { slug: 'sucos-naturais', name: 'Sucos Naturais' },
-                { slug: 'sucos-polpa-preco', name: 'Sucos de Polpa' }
-            ];
-
+            // COMPOSITE GROUPS v1.3.14
             if (categorySlug === 'bebidas') {
+                const beverageMap = [
+                    { slug: 'cervejas', name: 'Cervejas' }, { slug: 'agua', name: 'Água' },
+                    { slug: 'del-valle-290ml', name: 'Dell Valle 290ml' }, { slug: 'refri-lata-350ml', name: 'Refri Lata 350ml' },
+                    { slug: 'refri-500ml', name: 'Refri 500ml' }, { slug: 'refri-600ml', name: 'Refri 600ml' },
+                    { slug: 'refri-2l', name: 'Refri 2L' }, { slug: 'sucos-naturais', name: 'Sucos Naturais' }, { slug: 'sucos-polpa-preco', name: 'Sucos de Polpa' }
+                ];
                 beverageMap.forEach(bev => {
                     const catProducts = filteredProducts.filter(p => p.cat === bev.slug).sort((a,b) => a.title.localeCompare(b.title));
                     if (catProducts.length > 0) {
@@ -183,10 +176,20 @@
                         catProducts.forEach(item => { html += self.buildItemHtml(item); });
                     }
                 });
+            } else if (categorySlug === 'porcoes') {
+                // NESTED PORCOES v1.3.14: Pasteis on top
+                const pasteisItems = filteredProducts.filter(p => p.cat === 'porcoes-pasteis').sort((a,b) => a.title.localeCompare(b.title));
+                const generalItems = filteredProducts.filter(p => p.cat === 'porcoes').sort((a,b) => a.title.localeCompare(b.title));
+                
+                pasteisItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
+                
+                if (html === '') html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>';
+
             } else if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce' || categorySlug === 'cachorro-quente') {
-                const compositeMap = { 'pastel-salgado': 'pastel-salgado-adicional', 'pastel-doce': 'pastel-doce-adicional', 'cachorro-quente': 'cachorro-quente-acrescimo' };
                 const mainItems = filteredProducts.filter(p => p.cat === categorySlug).sort((a,b) => a.title.localeCompare(b.title));
-                const extraItems = filteredProducts.filter(p => p.cat === compositeMap[categorySlug]).sort((a,b) => a.title.localeCompare(b.title));
+                const extraSlug = (categorySlug === 'pastel-salgado') ? 'pastel-salgado-adicional' : (categorySlug === 'pastel-doce' ? 'pastel-doce-adicional' : 'cachorro-quente-acrescimo');
+                const extraItems = filteredProducts.filter(p => p.cat === extraSlug).sort((a,b) => a.title.localeCompare(b.title));
 
                 mainItems.forEach(item => { html += self.buildItemHtml(item); });
                 if (extraItems.length > 0) {
@@ -202,13 +205,14 @@
             this.$list.html(html);
         },
 
-        buildItemHtml: function(item, forceAdicionalClass = false) {
+        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null) {
             const statusClass = (item.status != '1') ? 'is-inactive' : '';
             const cat = item.cat;
-            let borderClass = '';
+            let borderClass = forceBorder || '';
+
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente') borderClass = 'b-hotdog';
-            else if (cat === 'porcoes') borderClass = 'b-bege';
+            else if (cat === 'porcoes' || cat === 'porcoes-pasteis') borderClass = 'b-bege';
             else if (cat === 'cervejas') borderClass = 'b-beer';
             else if (cat === 'agua') borderClass = 'b-water';
             else if (cat === 'del-valle-290ml' || cat === 'refri-600ml') borderClass = 'b-peach';

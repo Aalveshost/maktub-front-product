@@ -32,39 +32,34 @@ class Maktub_API_Handler {
     }
 
     public function get_products() {
+        $products = [];
         $args = [
             'post_type' => 'maktub',
             'posts_per_page' => -1,
             'post_status' => 'publish',
         ];
 
-        $query = new WP_Query( $args );
-        $products = [];
+        $posts = get_posts( $args );
 
-        if ( $query->have_posts() ) {
-            while ( $query->have_posts() ) {
-                $query->the_post();
-                $id = get_the_ID();
-                
-                $price = get_post_meta( $id, 'preco', true );
-                if(empty($price)) $price = get_post_meta($id, '_price', true);
+        foreach ( $posts as $post ) {
+            $id = $post->ID;
+            $price = get_post_meta( $id, 'preco', true );
+            if(empty($price)) $price = get_post_meta($id, '_price', true);
+            
+            $status_raw = get_post_meta( $id, 'status', true );
+            $status = ($status_raw === 'Disponível' || $status_raw == '1') ? '1' : '0';
 
-                $status_raw = get_post_meta( $id, 'status', true );
-                $status = ($status_raw === 'Disponível' || $status_raw === '1' || $status_raw === 1) ? '1' : '0';
+            $terms = get_the_terms( $id, 'maktub-categorias' );
+            $cat_slug = ($terms && !is_wp_error($terms)) ? $terms[0]->slug : '';
 
-                $terms = get_the_terms( $id, 'maktub-categorias' );
-                $cat_slug = ($terms && !is_wp_error($terms)) ? $terms[0]->slug : '';
-
-                $products[] = [
-                    'id' => $id,
-                    'title' => get_the_title(),
-                    'price' => $price,
-                    'status' => $status,
-                    'cat' => $cat_slug,
-                ];
-            }
+            $products[] = [
+                'id' => $id,
+                'title' => $post->post_title,
+                'price' => $price,
+                'status' => $status,
+                'cat' => $cat_slug,
+            ];
         }
-        wp_reset_postdata();
 
         $categories = get_terms([
             'taxonomy' => 'maktub-categorias',
@@ -73,18 +68,15 @@ class Maktub_API_Handler {
 
         return [
             'products' => $products,
-            'categories' => $categories
+            'categories' => is_wp_error($categories) ? [] : $categories
         ];
     }
 
     public function get_product( $request ) {
         $id = $request['id'];
-        
         $price = get_post_meta( $id, 'preco', true );
-        if(empty($price)) $price = get_post_meta($id, '_price', true);
-        
         $status_raw = get_post_meta( $id, 'status', true );
-        $status = ($status_raw === 'Disponível' || $status_raw === '1' || $status_raw === 1) ? '1' : '0';
+        $status = ($status_raw === 'Disponível' || $status_raw == '1') ? '1' : '0';
 
         return [
             'id' => $id,

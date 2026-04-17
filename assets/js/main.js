@@ -5,9 +5,6 @@
         allProducts: [],
         categories: [],
         currentMode: 'classic', 
-        isBatchMode: false,
-        currentBatchCategory: null,
-
         init: function() {
             this.cacheDOM();
             this.createToastElement();
@@ -63,21 +60,7 @@
                 else { $('.maktub-cat-card').removeClass('is-active'); $(this).addClass('is-active'); self.renderList(slug); }
             });
 
-            $(document).on('click', '.maktub-btn-edit', function(e) {
-                e.preventDefault();
-                const productId = $(this).data('product-id');
-                const batchCat = $(this).data('batch-category');
-                if (batchCat) {
-                    self.isBatchMode = true;
-                    self.currentBatchCategory = batchCat;
-                    self.openEditModal(productId, true);
-                } else {
-                    self.isBatchMode = false;
-                    self.currentBatchCategory = null;
-                    if (productId) self.openEditModal(productId);
-                }
-            });
-
+            $(document).on('click', '.maktub-btn-edit', function(e) { e.preventDefault(); const productId = $(this).data('product-id'); if (productId) self.openEditModal(productId); });
             $(document).on('click', '.maktub-modal-close', function(e) { e.stopPropagation(); $(this).closest('.maktub-modal').removeClass('is-active').hide(); });
 
             this.$priceInput.on('input', function() {
@@ -118,7 +101,7 @@
                     self.categories = response.categories || [];
                     if (self.currentMode === 'grid') self.showGridOnly(); else self.showClassicView();
                 },
-                error: function() { self.$modalBody.html('<p style="padding: 2rem; text-align: center;">Erro ao carregar dados.</p>'); }
+                error: function() { self.$list.html('<p style="padding: 2rem; text-align: center;">Erro ao carregar dados.</p>'); }
             });
         },
 
@@ -127,32 +110,21 @@
             this.$mainTitle.text('Escolha uma Categoria');
             this.$grid.show();
             this.$list.hide();
-            this.$loader.hide(); 
-            
             let gridHtml = '';
             const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas'];
-            
             slugsToShow.forEach(slug => {
-                let cat = null;
-                if (slug === 'bebidas') {
-                    cat = { name: 'Bebidas', slug: 'bebidas' };
-                } else {
-                    cat = this.categories.find(c => c.slug === slug);
-                }
-
+                const cat = (slug === 'bebidas') ? { name: 'Bebidas', slug: 'bebidas' } : this.categories.find(c => c.slug === slug);
                 if (cat) {
                     let icon = '🥟';
-                    const s = cat.slug;
-                    if (s.includes('doce')) icon = '🍩';
-                    else if (s.includes('especial')) icon = '🌟';
-                    else if (s.includes('hotdog') || s.includes('cachorro')) icon = '🌭';
-                    else if (s.includes('porcao') || s.includes('porcoes')) icon = '🍟';
-                    else if (s === 'bebidas') icon = '🥤';
-                    
+                    if (cat.slug.includes('doce')) icon = '🍩';
+                    else if (cat.slug.includes('especial')) icon = '🌟';
+                    else if (cat.slug.includes('hotdog') || cat.slug.includes('cachorro')) icon = '🌭';
+                    else if (cat.slug.includes('porcao') || cat.slug.includes('porcoes')) icon = '🍟';
+                    else if (cat.slug === 'bebidas') icon = '🥤';
                     gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
                 }
             });
-            this.$grid.html(gridHtml || '<p style="padding: 2rem;">Vazio.</p>');
+            this.$grid.html(gridHtml);
         },
 
         showClassicView: function() {
@@ -160,8 +132,6 @@
             this.$mainTitle.text('Gerenciar Maktub');
             this.$grid.show(); 
             this.$list.show(); 
-            this.$loader.hide();
-
             let gridHtml = `<div class="maktub-cat-card" data-slug="all"><div class="maktub-cat-img">🏠</div><h5>Todos</h5></div>`;
             this.categories.forEach(cat => {
                 let icon = '📦';
@@ -172,8 +142,8 @@
                 else if (slug.includes('hotdog') || slug.includes('cachorro')) icon = '🌭';
                 else if (slug.includes('porcao') || slug.includes('porcoes')) icon = '🍟';
                 else if (slug.includes('adicional') || slug.includes('acrescimo')) icon = '✨';
-                
-                gridHtml += `<div class="maktub-cat-card" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
+                const isActive = (slug === 'pastel-salgado') ? 'is-active' : '';
+                gridHtml += `<div class="maktub-cat-card ${isActive}" data-slug="${cat.slug}"><div class="maktub-cat-img">${icon}</div><h5>${cat.name}</h5></div>`;
             });
             this.$grid.html(gridHtml);
             this.renderList('pastel-salgado');
@@ -183,19 +153,13 @@
             this.$mainTitle.text(slug === 'bebidas' ? 'Bebidas' : (this.categories.find(c => c.slug === slug)?.name || 'Produtos'));
             this.$btnBack.show();
             this.$grid.hide();
-            this.$list.show().empty().html('<div style="padding: 2rem; text-align: center;">Carregando...</div>');
+            this.$list.show();
             this.renderList(slug);
         },
 
         renderList: function(categorySlug) {
             const self = this;
             let html = '';
-            
-            if (!this.allProducts || this.allProducts.length === 0) {
-                this.$list.html('<p style="padding: 2rem; text-align: center;">Nenhum produto encontrado.</p>');
-                return;
-            }
-
             const filteredProducts = this.allProducts.filter(p => p.title && !p.title.toLowerCase().includes('mini'));
 
             if (categorySlug === 'bebidas') {
@@ -218,14 +182,11 @@
                 
                 if (pasteisItems.length > 0) {
                     html += '<h3 class="maktub-list-section-title">Porções de Pastéis</h3>';
-                    // SAFETY v1.3.17: Copy properties carefully
-                    const master = pasteisItems[0];
-                    const masterCopy = { id: master.id, title: 'Todas Porções de Pastéis (Vários Sabores)', price: master.price, status: master.status, cat: master.cat };
-                    html += self.buildItemHtml(masterCopy, false, 'b-bege', 'porcoes-pasteis');
+                    pasteisItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
                 }
                 
                 if (generalItems.length > 0) {
-                    html += '<h3 class="maktub-list-section-title">Porções Gerais</h3>';
+                    html += '<h3 class="maktub-list-section-title">Porções</h3>';
                     generalItems.forEach(item => { html += self.buildItemHtml(item, false, 'b-bege'); });
                 }
             } else if (categorySlug === 'pastel-salgado' || categorySlug === 'pastel-doce' || categorySlug === 'cachorro-quente') {
@@ -244,14 +205,13 @@
                 if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } 
                 else { filtered.forEach(item => { html += self.buildItemHtml(item); }); }
             }
-            this.$list.html(html || '<p style="padding: 2rem; text-align: center;">Nenhum item disponível.</p>');
+            this.$list.html(html);
         },
 
-        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null, batchCategory = null) {
+        buildItemHtml: function(item, forceAdicionalClass = false, forceBorder = null) {
             const statusClass = (item.status != '1') ? 'is-inactive' : '';
             const cat = item.cat || '';
             let borderClass = forceBorder || '';
-            const dataBatch = batchCategory ? `data-batch-category="${batchCategory}"` : '';
 
             if (forceAdicionalClass || cat.includes('adicional') || cat.includes('acrescimo')) borderClass = 'b-gold';
             else if (cat === 'cachorro-quente') borderClass = 'b-hotdog';
@@ -268,24 +228,22 @@
             return `
                 <div class="maktub-list-item ${statusClass} ${borderClass}">
                     <div class="maktub-item-info">
-                        <h4>${item.title || 'Sem Título'}</h4>
+                        <h4>${item.title}</h4>
                         <div class="maktub-item-price">${this.formatPrice(item.price)}</div>
                     </div>
                     <div class="maktub-item-actions">
-                        <button class="maktub-btn-edit" data-product-id="${item.id}" ${dataBatch}>Editar</button>
+                        <button class="maktub-btn-edit" data-product-id="${item.id}">Editar</button>
                     </div>
                 </div>
             `;
         },
 
-        openEditModal: function(productId, isBatch = false) {
+        openEditModal: function(productId) {
             const self = this;
             this.$editModal.addClass('is-active').show();
             this.$form.hide();
             this.$loader.show();
             this.$productIdInput.val(productId);
-            this.isBatchMode = isBatch;
-
             $.ajax({
                 url: `${maktubData.restUrl}/product/${productId}`,
                 method: 'GET',
@@ -293,14 +251,13 @@
                 success: function(response) {
                     self.$loader.hide();
                     self.$form.show();
-                    const titlePrefix = self.isBatchMode ? '[LOTE] ' : '';
-                    self.$modalTitle.text(titlePrefix + (response.title || 'Produto'));
+                    self.$modalTitle.text(response.title);
                     let p = response.preco || '0';
                     p = parseFloat(p).toFixed(2).replace('.', ',');
                     self.$priceInput.val(p);
                     const isActive = (response.status == '1');
                     self.$statusToggle.prop('checked', isActive).trigger('change');
-                    self.$descInput.val(response.descricao || '');
+                    self.$descInput.val(response.descricao);
                 }
             });
         },
@@ -311,13 +268,9 @@
             let cleanPrice = this.$priceInput.val().replace(',', '.');
             const statusVal = this.$statusToggle.is(':checked') ? 'Disponível' : '';
             const data = { preco: cleanPrice, status: statusVal, descricao: this.$descInput.val() };
-            
-            const url = this.isBatchMode ? `${maktubData.restUrl}/batch-update` : `${maktubData.restUrl}/product/${productId}`;
-            if (this.isBatchMode) data.category = this.currentBatchCategory;
-
             this.$submitBtn.prop('disabled', true).text('Salvando...');
             $.ajax({
-                url: url,
+                url: `${maktubData.restUrl}/product/${productId}`,
                 method: 'POST',
                 data: data,
                 beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },

@@ -107,20 +107,28 @@ class Maktub_API_Handler {
         $params = $request->get_params();
 
         if ( isset( $params['preco'] ) ) {
-            update_post_meta( $id, 'preco', $params['preco'] );
-            update_post_meta( $id, '_price', $params['preco'] );
-            update_post_meta( $id, '_regular_price', $params['preco'] );
+            $price = sanitize_text_field( $params['preco'] );
+            update_post_meta( $id, 'preco', $price );
+            update_post_meta( $id, '_price', $price );
+            update_post_meta( $id, '_regular_price', $price );
         }
 
         if ( isset( $params['status'] ) ) {
-            // Standard JET Engine behavior: string for checked, empty for unchecked
-            update_post_meta( $id, 'status', $params['status'] );
+            // FIX v1.3.25: Save as ARRAY for Jet Engine compatibility
+            if ( $params['status'] === 'Disponível' ) {
+                update_post_meta( $id, 'status', ['Disponível'] );
+            } else {
+                update_post_meta( $id, 'status', [] );
+            }
         }
 
         if ( isset( $params['descricao'] ) ) {
-            update_post_meta( $id, 'descricao', $params['descricao'] );
+            update_post_meta( $id, 'descricao', sanitize_textarea_field( $params['descricao'] ) );
         }
 
+        // PURGE CACHE (WP & JET)
+        clean_post_cache( $id );
+        
         return [ 'success' => true ];
     }
 }

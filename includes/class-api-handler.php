@@ -11,13 +11,13 @@ class Maktub_API_Handler {
         register_rest_route( 'maktub/v2', '/products', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_products' ],
-            'permission_callback' => [ $this, 'check_permission' ],
+            'permission_callback' => '__return_true',
         ]);
 
         register_rest_route( 'maktub/v2', '/product/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_product' ],
-            'permission_callback' => [ $this, 'check_permission' ],
+            'permission_callback' => '__return_true',
         ]);
 
         register_rest_route( 'maktub/v2', '/product/(?P<id>\d+)', [
@@ -78,7 +78,7 @@ class Maktub_API_Handler {
             $price = get_post_meta( $id, 'preco', true );
             if(empty($price)) $price = get_post_meta($id, '_price', true);
             
-            // LOGIC v1.3.33: Checking for lowercase "disponivel"
+            // LOGIC v1.3.44: Checking for lowercase "disponivel"
             $status = $this->is_active($id) ? '1' : '0';
 
             $terms = get_the_terms( $id, 'maktub-categorias' );

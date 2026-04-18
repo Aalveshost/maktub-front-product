@@ -11,6 +11,7 @@
         currentCategory: 'all',
         statusChangedInModal: false,
         pendingIngredient: null,
+        mediaFrame: null,
 
         init: function() {
             this.cacheDOM();
@@ -36,6 +37,9 @@
             this.$statusToggle = $('#maktub-status-toggle');
             this.$statusText = $('#maktub-status-text');
             this.$descInput = $('#maktub-desc');
+            this.$imgIdInput = $('#maktub-img-id');
+            this.$imgPreview = $('#maktub-img-preview');
+            this.$btnUpload = $('#maktub-btn-upload');
             this.$productIdInput = $('#maktub-product-id');
             this.$modalTitle = $('#maktub-modal-title');
             this.$submitBtn = this.$form.find('.maktub-btn-primary');
@@ -51,6 +55,7 @@
             });
 
             this.$btnNew.on('click', function() { self.openCreateModal(); });
+            this.$btnUpload.on('click', function(e) { e.preventDefault(); self.openMediaFrame(); });
 
             $(document).on('click', '.maktub-cat-card', function() {
                 const slug = $(this).data('slug');
@@ -74,6 +79,18 @@
             this.$priceInput.on('input', function() { let v = $(this).val().replace(/\D/g, ''); if (v.length > 5) v = v.substring(0, 5); if (parseInt(v) > 99900) v = '99900'; if (v === '') { $(this).val(''); return; } v = (parseInt(v) / 100).toFixed(2).replace('.', ','); $(this).val(v); });
             this.$statusToggle.on('change', function() { const isChecked = $(this).is(':checked'); self.$statusText.text(isChecked ? 'Ativo' : 'Inativo'); self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isChecked ? 'status-is-ativo' : 'status-is-inativo'); self.statusChangedInModal = true; });
             this.$form.on('submit', function(e) { e.preventDefault(); self.saveData(); });
+        },
+
+        openMediaFrame: function() {
+            const self = this;
+            if (this.mediaFrame) { this.mediaFrame.open(); return; }
+            this.mediaFrame = wp.media({ title: 'Selecionar Imagem do Produto', button: { text: 'Usar esta imagem' }, multiple: false });
+            this.mediaFrame.on('select', function() {
+                const attachment = self.mediaFrame.state().get('selection').first().toJSON();
+                self.$imgIdInput.val(attachment.id);
+                self.$imgPreview.attr('src', attachment.url).show();
+            });
+            this.mediaFrame.open();
         },
 
         toggleInventory: function(ing, newStatus) {
@@ -231,15 +248,15 @@
             this.$statusToggle.prop('checked', true);
             this.$statusText.text('Ativo').addClass('status-is-ativo').removeClass('status-is-inativo');
             this.$descInput.val('');
+            this.$imgIdInput.val('');
+            this.$imgPreview.attr('src', '').hide();
             this.$modalTitle.text('Novo Item');
             this.$submitBtn.text('Cadastrar Item');
-            $('#maktub-cat-field-wrapper').show();
             this.$editModal.addClass('is-active').show(); this.$form.show(); this.$loader.hide();
         },
 
         openEditModal: function(productId) {
             const self = this; this.$editModal.addClass('is-active').show(); this.$form.hide(); this.$loader.show(); this.$productIdInput.val(productId);
-            $('#maktub-cat-field-wrapper').show();
             this.$submitBtn.text('Salvar Alterações');
             $.ajax({
                 url: `${maktubData.restUrl}/product/${productId}`, method: 'GET', beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
@@ -252,7 +269,8 @@
                     self.$statusToggle.prop('checked', isActive); self.$statusText.text(isActive ? 'Ativo' : 'Inativo');
                     self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isActive ? 'status-is-ativo' : 'status-is-inativo');
                     self.$descInput.val(response.descricao || '');
-                    // Find product cat in allProducts to pre-select
+                    self.$imgIdInput.val(response.img || '');
+                    if (response.img_url) { self.$imgPreview.attr('src', response.img_url).show(); } else { self.$imgPreview.hide(); }
                     const product = self.allProducts.find(x => x.id == productId);
                     if (product) self.$catSelect.val(product.cat);
                 }
@@ -270,7 +288,8 @@
                 category: this.$catSelect.val(),
                 preco: cleanPrice, 
                 descricao: this.$descInput.val(), 
-                status: statusVal 
+                status: statusVal,
+                img: this.$imgIdInput.val()
             };
 
             const url = (productId === '0') ? `${maktubData.restUrl}/product` : `${maktubData.restUrl}/product/${productId}`;

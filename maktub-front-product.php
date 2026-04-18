@@ -3,7 +3,7 @@
  * Plugin Name: Maktub Front Product Manager
  * Plugin URI: https://github.com/Aalveshost/maktub-front-product
  * Description: Interface premium para edição de produtos (Preço e Status) no frontend. Integrado com Jet Engine e WooCommerce.
- * Version: 1.3.63
+ * Version: 1.3.65
  * Author: Alef Alves
  * Author URI: https://aalves.dev
  * Text Domain: maktub-front
@@ -32,7 +32,7 @@ final class Maktub_Front_Product {
 	}
 
 	private function define_constants() {
-		define( 'MAKTUB_FRONT_VERSION', '1.3.63' );
+		define( 'MAKTUB_FRONT_VERSION', '1.3.65' );
 		define( 'MAKTUB_FRONT_PATH', plugin_dir_path( __FILE__ ) );
 		define( 'MAKTUB_FRONT_URL', plugin_dir_url( __FILE__ ) );
 	}
@@ -64,6 +64,9 @@ final class Maktub_Front_Product {
 
 		// Enqueue styles
 		wp_enqueue_style( 'maktub-front-style', MAKTUB_FRONT_URL . 'assets/css/style.css', array(), MAKTUB_FRONT_VERSION );
+
+		// Enqueue media library
+		wp_enqueue_media();
 
 		// Enqueue scripts
 		wp_enqueue_script( 'maktub-front-script', MAKTUB_FRONT_URL . 'assets/js/main.js', array( 'jquery' ), MAKTUB_FRONT_VERSION, true );
@@ -152,7 +155,16 @@ final class Maktub_Front_Product {
 
 						<div class="maktub-field-group">
 							<label for="maktub-desc">Descrição</label>
-							<textarea id="maktub-desc" name="descricao" rows="4"></textarea>
+							<textarea id="maktub-desc" name="descricao" rows="3"></textarea>
+						</div>
+
+						<div class="maktub-field-group">
+							<label>Imagem do Produto</label>
+							<div class="maktub-image-manager" style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 15px; text-align: center;">
+								<img id="maktub-img-preview" src="" style="display:none; max-width: 100%; border-radius: 10px; margin-bottom: 12px; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+								<input type="hidden" id="maktub-img-id" name="img">
+								<button type="button" id="maktub-btn-upload" class="maktub-btn" style="background: #4b5563 !important; font-size: 13px !important; padding: 10px 15px !important; height: auto !important; width: auto !important; display: inline-block !important;">Selecionar Imagem</button>
+							</div>
 						</div>
 
 						<div class="maktub-modal-footer">

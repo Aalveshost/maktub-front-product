@@ -134,6 +134,8 @@ class Maktub_API_Handler {
             'preco' => $price,
             'status' => $status,
             'descricao' => get_post_meta( $id, 'descricao', true ),
+            'img' => get_post_meta( $id, 'img', true ),
+            'img_url' => wp_get_attachment_url( get_post_meta( $id, 'img', true ) ),
         ];
     }
 
@@ -171,6 +173,10 @@ class Maktub_API_Handler {
 
         if ( isset( $params['descricao'] ) ) {
             update_post_meta( $id, 'descricao', sanitize_textarea_field( $params['descricao'] ) );
+        }
+
+        if ( isset( $params['img'] ) ) {
+            update_post_meta( $id, 'img', sanitize_text_field( $params['img'] ) );
         }
 
         clean_post_cache( $id );
@@ -212,6 +218,10 @@ class Maktub_API_Handler {
 
         if ( isset( $params['descricao'] ) ) {
             update_post_meta( $id, 'descricao', sanitize_textarea_field( $params['descricao'] ) );
+        }
+
+        if ( !empty( $params['img'] ) ) {
+            update_post_meta( $id, 'img', sanitize_text_field( $params['img'] ) );
         }
 
         return [ 'success' => true, 'id' => $id ];

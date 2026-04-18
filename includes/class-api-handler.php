@@ -111,13 +111,9 @@ class Maktub_API_Handler {
     public function get_product( $request ) {
         $id = $request['id'];
         $img_val = get_post_meta( $id, 'img', true );
-        $img_url = '';
+        $final_url = '';
         if ( !empty($img_val) ) {
-            if ( is_numeric($img_val) ) {
-                $img_url = wp_get_attachment_url( $img_val );
-            } else {
-                $img_url = $img_val;
-            }
+            $final_url = is_numeric($img_val) ? wp_get_attachment_url($img_val) : $img_val;
         }
 
         return [
@@ -126,8 +122,8 @@ class Maktub_API_Handler {
             'preco' => get_post_meta( $id, 'preco', true ),
             'status' => $this->is_active($id) ? '1' : '0',
             'descricao' => get_post_meta( $id, 'descricao', true ),
-            'img' => $img_val,
-            'img_url' => $img_url,
+            'img' => $final_url, // Return URL directly as the meta value
+            'img_url' => $final_url,
         ];
     }
 

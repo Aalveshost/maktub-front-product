@@ -33,12 +33,12 @@ class Maktub_API_Handler {
         ]);
 
         register_rest_route( 'maktub/v2', '/upload', [
-            'methods' => 'POST',
+            'methods'  => 'POST',
             'callback' => [ $this, 'upload_image' ],
             'permission_callback' => '__return_true',
         ]);
 
-        // INVENTORY BULK ROUTES v1.3.46
+        // INVENTORY BULK ROUTES
         register_rest_route( 'maktub/v2', '/inventory', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_inventory' ],
@@ -52,17 +52,9 @@ class Maktub_API_Handler {
         ]);
     }
 
-    public function check_permission() {
-        return current_user_can( 'manage_options' ) || current_user_can( 'administrator' ) || current_user_can( 'shop_manager' );
-    }
-
     private function is_active( $id ) {
-        // Strict check based on Jet Engine meta value "disponivel"
         $meta = get_post_meta( $id, 'status', true );
-        
         if ( empty($meta) ) return false;
-
-        // If it's an array (standard Jet Checkbox)
         if ( is_array($meta) ) {
             foreach($meta as $val) {
                 $v = strtolower(trim((string)$val));
@@ -70,8 +62,6 @@ class Maktub_API_Handler {
             }
             return false;
         }
-
-        // If it's a serialized string
         if ( is_serialized($meta) ) {
             $unserialized = @unserialize($meta);
             if ( is_array($unserialized) ) {
@@ -82,30 +72,23 @@ class Maktub_API_Handler {
             }
             return false;
         }
-
-        // Simple string comparison
         $v = strtolower(trim((string)$meta));
         return ( $v === 'disponivel' || $v === '1' || $v === 'true' || $v === 'on' );
     }
 
     public function get_products() {
         $products = [];
-        $args = [
+        $posts = get_posts([
             'post_type' => 'maktub',
             'posts_per_page' => -1,
             'post_status' => 'publish',
-        ];
-
-        $posts = get_posts( $args );
+        ]);
 
         foreach ( $posts as $post ) {
             $id = $post->ID;
             $price = get_post_meta( $id, 'preco', true );
             if(empty($price)) $price = get_post_meta($id, '_price', true);
-            
-            // LOGIC v1.3.44: Checking for lowercase "disponivel"
             $status = $this->is_active($id) ? '1' : '0';
-
             $terms = get_the_terms( $id, 'maktub-categorias' );
             $cat_slug = ($terms && !is_wp_error($terms)) ? $terms[0]->slug : '';
 
@@ -118,11 +101,7 @@ class Maktub_API_Handler {
             ];
         }
 
-        $categories = get_terms([
-            'taxonomy' => 'maktub-categorias',
-            'hide_empty' => false,
-        ]);
-
+        $categories = get_terms(['taxonomy' => 'maktub-categorias', 'hide_empty' => false]);
         return [
             'products' => $products,
             'categories' => is_wp_error($categories) ? [] : $categories
@@ -131,14 +110,11 @@ class Maktub_API_Handler {
 
     public function get_product( $request ) {
         $id = $request['id'];
-        $price = get_post_meta( $id, 'preco', true );
-        $status = $this->is_active($id) ? '1' : '0';
-
         return [
             'id' => $id,
             'title' => get_the_title($id),
-            'preco' => $price,
-            'status' => $status,
+            'preco' => get_post_meta( $id, 'preco', true ),
+            'status' => $this->is_active($id) ? '1' : '0',
             'descricao' => get_post_meta( $id, 'descricao', true ),
             'img' => get_post_meta( $id, 'img', true ),
             'img_url' => wp_get_attachment_url( get_post_meta( $id, 'img', true ) ),
@@ -157,7 +133,6 @@ class Maktub_API_Handler {
         }
 
         if ( isset( $params['status'] ) ) {
-            // FIX v1.3.33: IMPORTANT! Using lowercase "disponivel" to match Jet Engine settings
             if ( $params['status'] === 'Disponível' ) {
                 update_post_meta( $id, 'status', ['disponivel'] );
             } else {
@@ -166,11 +141,7 @@ class Maktub_API_Handler {
         }
 
         if ( isset( $params['post_title'] ) ) {
-            $update_post = [
-                'ID' => $id,
-                'post_title' => sanitize_text_field( $params['post_title'] ),
-            ];
-            wp_update_post( $update_post );
+            wp_update_post(['ID' => $id, 'post_title' => sanitize_text_field( $params['post_title'] )]);
         }
 
         if ( isset( $params['category'] ) ) {
@@ -186,7 +157,6 @@ class Maktub_API_Handler {
         }
 
         clean_post_cache( $id );
-        
         return [ 'success' => true ];
     }
 
@@ -201,7 +171,7 @@ class Maktub_API_Handler {
             return new WP_Error( 'no_file', 'Nenhum arquivo enviado.', [ 'status' => 400 ] );
         }
 
-        $attachment_id = media_handle_upload( 'file', 0 ); // 0 = no post parent initially
+        $attachment_id = media_handle_upload( 'file', 0 );
 
         if ( is_wp_error( $attachment_id ) ) {
             return new WP_Error( 'upload_err', $attachment_id->get_error_message(), [ 'status' => 500 ] );
@@ -212,17 +182,16 @@ class Maktub_API_Handler {
             'id'      => $attachment_id,
             'url'     => wp_get_attachment_url( $attachment_id ),
         ];
+    }
+
     public function create_product( $request ) {
         $params = $request->get_params();
         
-        $new_post = [
+        $id = wp_insert_post([
             'post_title'   => sanitize_text_field( $params['post_title'] ),
-            'post_content' => '',
             'post_status'  => 'publish',
             'post_type'    => 'maktub'
-        ];
-
-        $id = wp_insert_post( $new_post );
+        ]);
 
         if ( is_wp_error( $id ) ) return [ 'success' => false, 'error' => $id->get_error_message() ];
 
@@ -255,15 +224,13 @@ class Maktub_API_Handler {
         return [ 'success' => true, 'id' => $id ];
     }
 
-    // INVENTORY LOGIC v1.3.50
     public function get_inventory() {
         $ingredients = ['atum', 'bacon', 'calabresa', 'camarão', 'carne', 'costela', 'frango', 'pernil', 'queijo'];
         sort($ingredients);
         $status = get_option( 'maktub_inventory_status', [] );
-        
         $result = [];
         foreach($ingredients as $ing) {
-            $result[$ing] = isset($status[$ing]) ? $status[$ing] : '1'; // Default active
+            $result[$ing] = isset($status[$ing]) ? $status[$ing] : '1';
         }
         return $result;
     }
@@ -271,51 +238,31 @@ class Maktub_API_Handler {
     public function toggle_ingredient( $request ) {
         $params = $request->get_params();
         $ing = strtolower(sanitize_text_field($params['ingredient']));
-        $new_status = $params['status']; // '1' or '0'
+        $new_status = $params['status'];
         
-        // Update Options
         $status_map = get_option( 'maktub_inventory_status', [] );
         $status_map[$ing] = $new_status;
         update_option( 'maktub_inventory_status', $status_map );
 
-        // Update Products
-        $args = [
-            'post_type' => 'maktub',
-            'posts_per_page' => -1,
-            'post_status' => 'publish',
-        ];
-        $posts = get_posts($args);
+        $posts = get_posts(['post_type' => 'maktub', 'posts_per_page' => -1, 'post_status' => 'publish']);
         $count = 0;
 
         foreach($posts as $post) {
             $title = mb_strtolower($post->post_title, 'UTF-8');
-            $term_found = (strpos($title, $ing) !== false);
+            $desc = mb_strtolower(get_post_meta($post->ID, 'descricao', true), 'UTF-8');
             
-            if (!$term_found) {
-                $desc = mb_strtolower(get_post_meta($post->ID, 'descricao', true), 'UTF-8');
-                $term_found = (strpos($desc, $ing) !== false);
-            }
-
-            if ($term_found) {
-                // Bulk Toggle Status - LOGIC ALIGNED WITH GRID v1.3.47
+            if (strpos($title, $ing) !== false || strpos($desc, $ing) !== false) {
                 if ($new_status == '1') {
                     update_post_meta($post->ID, 'status', ['disponivel']);
+                    update_post_meta($post->ID, '_stock_status', 'instock');
                 } else {
                     update_post_meta($post->ID, 'status', []);
-                }
-                
-                // Ensure WooCommerce compatibility if needed
-                if ($new_status == '0') {
                     update_post_meta($post->ID, '_stock_status', 'outofstock');
-                } else {
-                    update_post_meta($post->ID, '_stock_status', 'instock');
                 }
-
                 clean_post_cache($post->ID);
                 $count++;
             }
         }
-
         return [ 'success' => true, 'count' => $count ];
     }
 }

@@ -36,13 +36,16 @@
             this.$statusToggle = $('#maktub-status-toggle');
             this.$statusText = $('#maktub-status-text');
             this.$descInput = $('#maktub-desc');
+            
+            // Image Elements - Resilient Cache
             this.$imgIdInput = $('#maktub-img-id');
             this.$imgPreview = $('#maktub-img-preview');
             this.$imgEmpty = $('#maktub-img-empty');
+            this.$dropzone = $('#maktub-dropzone');
             this.$fileInput = $('#maktub-file-input');
-            this.$btnTriggerUpload = $('#maktub-btn-trigger-upload');
             this.$btnRemoveImg = $('#maktub-btn-remove-img');
             this.$uploadStatus = $('#maktub-upload-status');
+            
             this.$productIdInput = $('#maktub-product-id');
             this.$modalTitle = $('#maktub-modal-title');
             this.$submitBtn = this.$form.find('.maktub-btn-primary');
@@ -59,9 +62,21 @@
 
             this.$btnNew.on('click', function() { self.openCreateModal(); });
             
-            this.$btnTriggerUpload.on('click', function() { self.$fileInput.click(); });
-            this.$fileInput.on('change', function() { self.handleUpload(this.files[0]); });
-            this.$btnRemoveImg.on('click', function() { self.clearImage(); });
+            // Drag & Drop / Click Upload
+            if (this.$dropzone.length) {
+                this.$dropzone.on('click', function(e) { if (!$(e.target).is('button')) self.$fileInput.click(); });
+                this.$dropzone.on('dragover', function(e) { e.preventDefault(); $(this).css('border-color', 'var(--maktub-orange)').css('background', '#fffcf0'); });
+                this.$dropzone.on('dragleave', function(e) { e.preventDefault(); $(this).css('border-color', '#e2e8f0').css('background', '#fdfdfd'); });
+                this.$dropzone.on('drop', function(e) {
+                    e.preventDefault();
+                    $(this).css('border-color', '#e2e8f0').css('background', '#fdfdfd');
+                    const files = e.originalEvent.dataTransfer.files;
+                    if (files.length) self.handleUpload(files[0]);
+                });
+            }
+
+            this.$fileInput.on('change', function() { if (this.files.length) self.handleUpload(this.files[0]); });
+            this.$btnRemoveImg.on('click', function(e) { e.stopPropagation(); self.clearImage(); });
 
             $(document).on('click', '.maktub-cat-card', function() {
                 const slug = $(this).data('slug');
@@ -94,7 +109,7 @@
             formData.append('file', file);
 
             this.$uploadStatus.show().text('Enviando imagem...');
-            this.$btnTriggerUpload.prop('disabled', true);
+            this.$dropzone.css('opacity', '0.6');
 
             $.ajax({
                 url: `${maktubData.restUrl}/upload`,
@@ -105,7 +120,7 @@
                 beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
                 success: function(response) {
                     self.$uploadStatus.hide();
-                    self.$btnTriggerUpload.prop('disabled', false).text('ALTERAR FOTO');
+                    self.$dropzone.css('opacity', '1');
                     if (response.success) {
                         self.$imgIdInput.val(response.id);
                         self.$imgPreview.attr('src', response.url).show();
@@ -114,19 +129,18 @@
                     }
                 },
                 error: function() {
-                    self.$uploadStatus.text('Erro no upload!').css('color', 'red');
-                    self.$btnTriggerUpload.prop('disabled', false);
+                    self.$uploadStatus.text('Falha no upload!').css('color', 'red');
+                    self.$dropzone.css('opacity', '1');
                 }
             });
         },
 
         clearImage: function() {
-            this.$imgIdInput.val('');
-            this.$imgPreview.attr('src', '').hide();
-            this.$imgEmpty.show();
-            this.$btnRemoveImg.hide();
-            this.$fileInput.val('');
-            this.$btnTriggerUpload.text('ADICIONAR FOTO');
+            if (this.$imgIdInput.length) this.$imgIdInput.val('');
+            if (this.$imgPreview.length) this.$imgPreview.attr('src', '').hide();
+            if (this.$imgEmpty.length) this.$imgEmpty.show();
+            if (this.$btnRemoveImg.length) this.$btnRemoveImg.hide();
+            if (this.$fileInput.length) this.$fileInput.val('');
         },
 
         toggleInventory: function(ing, newStatus) {
@@ -279,7 +293,7 @@
         openCreateModal: function() {
             this.$productIdInput.val('0');
             this.$titleInput.val('');
-            this.$catSelect.val(this.currentCategory !== 'grid' ? this.currentCategory : '');
+            this.$catSelect.val(this.currentCategory !== 'grid' && this.currentCategory !== 'all' ? this.currentCategory : '');
             this.$priceInput.val('');
             this.$statusToggle.prop('checked', true);
             this.$statusText.text('Ativo').addClass('status-is-ativo').removeClass('status-is-inativo');
@@ -306,15 +320,14 @@
                     self.$descInput.val(response.descricao || '');
                     
                     if (response.img && response.img_url) {
-                        self.$imgIdInput.val(response.img);
-                        self.$imgPreview.attr('src', response.img_url).show();
-                        self.$imgEmpty.hide();
-                        self.$btnRemoveImg.show();
-                        self.$btnTriggerUpload.text('ALTERAR FOTO');
+                        if (self.$imgIdInput.length) self.$imgIdInput.val(response.img);
+                        if (self.$imgPreview.length) self.$imgPreview.attr('src', response.img_url).show();
+                        if (self.$imgEmpty.length) self.$imgEmpty.hide();
+                        if (self.$btnRemoveImg.length) self.$btnRemoveImg.show();
                     } else { self.clearImage(); }
                     
                     const product = self.allProducts.find(x => x.id == productId);
-                    if (product) self.$catSelect.val(product.cat);
+                    if (product && self.$catSelect.length) self.$catSelect.val(product.cat);
                 }
             });
         },

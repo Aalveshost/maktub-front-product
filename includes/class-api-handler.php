@@ -32,6 +32,12 @@ class Maktub_API_Handler {
             'permission_callback' => '__return_true',
         ]);
 
+        register_rest_route( 'maktub/v2', '/upload', [
+            'methods' => 'POST',
+            'callback' => [ $this, 'upload_image' ],
+            'permission_callback' => '__return_true',
+        ]);
+
         // INVENTORY BULK ROUTES v1.3.46
         register_rest_route( 'maktub/v2', '/inventory', [
             'methods' => 'GET',
@@ -184,6 +190,28 @@ class Maktub_API_Handler {
         return [ 'success' => true ];
     }
 
+    public function upload_image( $request ) {
+        if ( ! function_exists( 'media_handle_upload' ) ) {
+            require_once( ABSPATH . 'wp-admin/includes/image.php' );
+            require_once( ABSPATH . 'wp-admin/includes/file.php' );
+            require_once( ABSPATH . 'wp-admin/includes/media.php' );
+        }
+
+        if ( empty( $_FILES['file'] ) ) {
+            return new WP_Error( 'no_file', 'Nenhum arquivo enviado.', [ 'status' => 400 ] );
+        }
+
+        $attachment_id = media_handle_upload( 'file', 0 ); // 0 = no post parent initially
+
+        if ( is_wp_error( $attachment_id ) ) {
+            return new WP_Error( 'upload_err', $attachment_id->get_error_message(), [ 'status' => 500 ] );
+        }
+
+        return [
+            'success' => true,
+            'id'      => $attachment_id,
+            'url'     => wp_get_attachment_url( $attachment_id ),
+        ];
     public function create_product( $request ) {
         $params = $request->get_params();
         

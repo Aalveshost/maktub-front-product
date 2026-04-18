@@ -3,7 +3,7 @@
  * Plugin Name: Maktub Front Product Manager
  * Plugin URI: https://github.com/Aalveshost/maktub-front-product
  * Description: Interface premium para edição de produtos (Preço e Status) no frontend. Integrado com Jet Engine e WooCommerce.
- * Version: 1.3.65
+ * Version: 1.3.70
  * Author: Alef Alves
  * Author URI: https://aalves.dev
  * Text Domain: maktub-front
@@ -32,7 +32,7 @@ final class Maktub_Front_Product {
 	}
 
 	private function define_constants() {
-		define( 'MAKTUB_FRONT_VERSION', '1.3.65' );
+		define( 'MAKTUB_FRONT_VERSION', '1.3.70' );
 		define( 'MAKTUB_FRONT_PATH', plugin_dir_path( __FILE__ ) );
 		define( 'MAKTUB_FRONT_URL', plugin_dir_url( __FILE__ ) );
 	}
@@ -160,10 +160,21 @@ final class Maktub_Front_Product {
 
 						<div class="maktub-field-group">
 							<label>Imagem do Produto</label>
-							<div class="maktub-image-manager" style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 15px; text-align: center;">
-								<img id="maktub-img-preview" src="" style="display:none; max-width: 100%; border-radius: 10px; margin-bottom: 12px; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-								<input type="hidden" id="maktub-img-id" name="img">
-								<button type="button" id="maktub-btn-upload" class="maktub-btn" style="background: #4b5563 !important; font-size: 13px !important; padding: 10px 15px !important; height: auto !important; width: auto !important; display: inline-block !important;">Selecionar Imagem</button>
+							<div class="maktub-image-manager" style="background: #fdfdfd; border: 2px dashed #e2e8f0; border-radius: 16px; padding: 20px; text-align: center; position: relative;">
+								<div id="maktub-img-empty" style="padding: 10px; color: #94a3b8; font-size: 13px; font-weight: 600;">
+									Nenhuma imagem selecionada
+								</div>
+								<img id="maktub-img-preview" src="" style="display:none; max-width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 12px; border: 3px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+								
+								<div class="maktub-img-actions" style="display: flex; justify-content: center; gap: 10px;">
+									<input type="file" id="maktub-file-input" style="display:none;" accept="image/*">
+									<input type="hidden" id="maktub-img-id" name="img">
+									
+									<button type="button" id="maktub-btn-trigger-upload" class="maktub-btn" style="background: var(--maktub-orange) !important; font-size: 11px !important; padding: 8px 15px !important; height: auto !important; width: auto !important;">ALTERAR FOTO</button>
+									<button type="button" id="maktub-btn-remove-img" class="maktub-btn" style="background: var(--maktub-red) !important; font-size: 11px !important; padding: 8px 15px !important; height: auto !important; width: auto !important; display:none;">REMOVER</button>
+								</div>
+								
+								<div id="maktub-upload-status" style="display:none; margin-top: 10px; font-size: 11px; font-weight: 700; color: var(--maktub-orange);">Subindo...</div>
 							</div>
 						</div>
 

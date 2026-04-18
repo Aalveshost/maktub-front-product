@@ -11,7 +11,6 @@
         currentCategory: 'all',
         statusChangedInModal: false,
         pendingIngredient: null,
-        mediaFrame: null,
 
         init: function() {
             this.cacheDOM();
@@ -39,7 +38,11 @@
             this.$descInput = $('#maktub-desc');
             this.$imgIdInput = $('#maktub-img-id');
             this.$imgPreview = $('#maktub-img-preview');
-            this.$btnUpload = $('#maktub-btn-upload');
+            this.$imgEmpty = $('#maktub-img-empty');
+            this.$fileInput = $('#maktub-file-input');
+            this.$btnTriggerUpload = $('#maktub-btn-trigger-upload');
+            this.$btnRemoveImg = $('#maktub-btn-remove-img');
+            this.$uploadStatus = $('#maktub-upload-status');
             this.$productIdInput = $('#maktub-product-id');
             this.$modalTitle = $('#maktub-modal-title');
             this.$submitBtn = this.$form.find('.maktub-btn-primary');
@@ -55,7 +58,10 @@
             });
 
             this.$btnNew.on('click', function() { self.openCreateModal(); });
-            this.$btnUpload.on('click', function(e) { e.preventDefault(); self.openMediaFrame(); });
+            
+            this.$btnTriggerUpload.on('click', function() { self.$fileInput.click(); });
+            this.$fileInput.on('change', function() { self.handleUpload(this.files[0]); });
+            this.$btnRemoveImg.on('click', function() { self.clearImage(); });
 
             $(document).on('click', '.maktub-cat-card', function() {
                 const slug = $(this).data('slug');
@@ -81,16 +87,46 @@
             this.$form.on('submit', function(e) { e.preventDefault(); self.saveData(); });
         },
 
-        openMediaFrame: function() {
+        handleUpload: function(file) {
+            if (!file) return;
             const self = this;
-            if (this.mediaFrame) { this.mediaFrame.open(); return; }
-            this.mediaFrame = wp.media({ title: 'Selecionar Imagem do Produto', button: { text: 'Usar esta imagem' }, multiple: false });
-            this.mediaFrame.on('select', function() {
-                const attachment = self.mediaFrame.state().get('selection').first().toJSON();
-                self.$imgIdInput.val(attachment.id);
-                self.$imgPreview.attr('src', attachment.url).show();
+            const formData = new FormData();
+            formData.append('file', file);
+
+            this.$uploadStatus.show().text('Enviando imagem...');
+            this.$btnTriggerUpload.prop('disabled', true);
+
+            $.ajax({
+                url: `${maktubData.restUrl}/upload`,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function(xhr) { xhr.setRequestHeader('X-WP-Nonce', maktubData.nonce); },
+                success: function(response) {
+                    self.$uploadStatus.hide();
+                    self.$btnTriggerUpload.prop('disabled', false).text('ALTERAR FOTO');
+                    if (response.success) {
+                        self.$imgIdInput.val(response.id);
+                        self.$imgPreview.attr('src', response.url).show();
+                        self.$imgEmpty.hide();
+                        self.$btnRemoveImg.show();
+                    }
+                },
+                error: function() {
+                    self.$uploadStatus.text('Erro no upload!').css('color', 'red');
+                    self.$btnTriggerUpload.prop('disabled', false);
+                }
             });
-            this.mediaFrame.open();
+        },
+
+        clearImage: function() {
+            this.$imgIdInput.val('');
+            this.$imgPreview.attr('src', '').hide();
+            this.$imgEmpty.show();
+            this.$btnRemoveImg.hide();
+            this.$fileInput.val('');
+            this.$btnTriggerUpload.text('ADICIONAR FOTO');
         },
 
         toggleInventory: function(ing, newStatus) {
@@ -248,8 +284,7 @@
             this.$statusToggle.prop('checked', true);
             this.$statusText.text('Ativo').addClass('status-is-ativo').removeClass('status-is-inativo');
             this.$descInput.val('');
-            this.$imgIdInput.val('');
-            this.$imgPreview.attr('src', '').hide();
+            this.clearImage();
             this.$modalTitle.text('Novo Item');
             this.$submitBtn.text('Cadastrar Item');
             this.$editModal.addClass('is-active').show(); this.$form.show(); this.$loader.hide();
@@ -269,8 +304,15 @@
                     self.$statusToggle.prop('checked', isActive); self.$statusText.text(isActive ? 'Ativo' : 'Inativo');
                     self.$statusText.removeClass('status-is-ativo status-is-inativo').addClass(isActive ? 'status-is-ativo' : 'status-is-inativo');
                     self.$descInput.val(response.descricao || '');
-                    self.$imgIdInput.val(response.img || '');
-                    if (response.img_url) { self.$imgPreview.attr('src', response.img_url).show(); } else { self.$imgPreview.hide(); }
+                    
+                    if (response.img && response.img_url) {
+                        self.$imgIdInput.val(response.img);
+                        self.$imgPreview.attr('src', response.img_url).show();
+                        self.$imgEmpty.hide();
+                        self.$btnRemoveImg.show();
+                        self.$btnTriggerUpload.text('ALTERAR FOTO');
+                    } else { self.clearImage(); }
+                    
                     const product = self.allProducts.find(x => x.id == productId);
                     if (product) self.$catSelect.val(product.cat);
                 }

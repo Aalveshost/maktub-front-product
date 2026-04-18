@@ -177,16 +177,56 @@ class Maktub_API_Handler {
             return new WP_Error( 'no_file', 'Nenhum arquivo enviado.', [ 'status' => 400 ] );
         }
 
-        $attachment_id = media_handle_upload( 'file', 0 );
+        // 1. Initial Upload
+        $upload_overrides = array( 'test_form' => false );
+        $moved_file = wp_handle_upload( $_FILES['file'], $upload_overrides );
 
-        if ( is_wp_error( $attachment_id ) ) {
-            return new WP_Error( 'upload_err', $attachment_id->get_error_message(), [ 'status' => 500 ] );
+        if ( !isset($moved_file['file']) ) {
+             return new WP_Error( 'upload_err', 'Falha ao processar arquivo.', [ 'status' => 500 ] );
+        }
+
+        $file_path = $moved_file['file'];
+
+        // 2. Optimization (Resize 500x500 crop & Convert to WebP) v1.4.00
+        $editor = wp_get_image_editor( $file_path );
+        if ( ! is_wp_error( $editor ) ) {
+            $editor->resize( 500, 500, true ); // Strict Square Crop
+            $editor->set_quality( 85 );
+            
+            // WebP Target Path
+            $info = pathinfo($file_path);
+            $webp_path = $info['dirname'] . '/' . $info['filename'] . '.webp';
+            
+            // Attempt conversion/save
+            $saved = $editor->save($webp_path, 'image/webp');
+            
+            if (!is_wp_error($saved)) {
+                @unlink($file_path); // Cleanup original heavy file
+                $file_path = $saved['path'];
+            }
+        }
+
+        // 3. Create WordPress Attachment
+        $file_name = basename($file_path);
+        $file_type = wp_check_filetype($file_name, null);
+        $attachment = array(
+            'post_mime_type' => $file_type['type'],
+            'post_title'     => preg_replace( '/\.[^.]+$/', '', $file_name ),
+            'post_content'   => '',
+            'post_status'    => 'inherit'
+        );
+
+        $attach_id = wp_insert_attachment( $attachment, $file_path );
+        if ( ! is_wp_error( $attach_id ) ) {
+            require_once( ABSPATH . 'wp-admin/includes/image.php' );
+            $attach_data = wp_generate_attachment_metadata( $attach_id, $file_path );
+            wp_update_attachment_metadata( $attach_id, $attach_data );
         }
 
         return [
             'success' => true,
-            'id'      => $attachment_id,
-            'url'     => wp_get_attachment_url( $attachment_id ),
+            'id'      => $attach_id,
+            'url'     => wp_get_attachment_url( $attach_id ),
         ];
     }
 

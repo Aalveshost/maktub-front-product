@@ -122,7 +122,7 @@
                     self.$uploadStatus.hide();
                     self.$dropzone.css('opacity', '1');
                     if (response.success) {
-                        self.$imgIdInput.val(response.id);
+                        self.$imgIdInput.val(response.url); // PERSIST DIRECT URL v1.3.85
                         self.$imgPreview.attr('src', response.url).show();
                         self.$imgEmpty.hide();
                         self.$btnRemoveImg.show();

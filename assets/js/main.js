@@ -217,7 +217,7 @@
         showGridOnly: function() {
             this.$btnBack.show(); this.$mainTitle.text('Escolha uma Categoria'); this.$grid.show(); this.$list.hide(); this.currentCategory = 'grid';
             let gridHtml = '';
-            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas', 'sorvetes'];
+            const slugsToShow = ['pastel-salgado', 'pastel-doce', 'pastel-especial', 'cachorro-quente', 'porcoes', 'bebidas', 'sorvetes', 'doces'];
             slugsToShow.forEach(slug => {
                 const cat = (slug === 'bebidas') ? { name: 'Bebidas', slug: 'bebidas' } : this.categories.find(c => c.slug === slug);
                 if (cat) {
@@ -260,7 +260,7 @@
                 mainItems.forEach(item => { html += self.buildItemHtml(item); });
                 if (extraItems.length > 0) { html += '<h3 class="maktub-list-section-title">Adicionais</h3>'; extraItems.forEach(item => { html += self.buildItemHtml(item, true); }); }
             } else {
-                let border = (categorySlug === 'sorvetes') ? 'b-sorvete' : null;
+                let border = (categorySlug === 'sorvetes') ? 'b-sorvete' : (categorySlug === 'doces' ? 'b-peach' : null);
                 let filtered = filteredProducts.filter(p => p.cat === categorySlug).sort((a, b) => a.title.localeCompare(b.title));
                 if (filtered.length === 0) { html = '<p style="padding: 2rem; text-align: center;">Vazio.</p>'; } else { filtered.forEach(item => { html += self.buildItemHtml(item, false, border); }); }
             }
